@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
-import { addToCart } from '../../slice/cartSlice';
-import { Avatar, Box, Button, CircularProgress, Grid, IconButton, Typography } from '@mui/material';
-import { AddShoppingCart, Favorite, Star } from '@mui/icons-material';
+import { Avatar, Box, Button, CircularProgress, Grid, IconButton, Rating, Typography } from '@mui/material';
+import { AddShoppingCart, Favorite } from '@mui/icons-material';
+import type { AppDispatch } from '../../redux/store';
+import { selectToken } from '../../redux/selectors';
+import { UpdatedCartItem, addToCart } from '../../slice/cartSlice';
+import { DecodeUser } from '../system/UserCart';
+import jwt_decode from 'jwt-decode';
 
 interface Product {
     id: number;
@@ -17,14 +21,14 @@ interface Product {
     price: number;
 }
 
-function ProductDetail() {
+const ProductDetail: React.FC = () => {
     const [product, setProduct] = useState<Product | null>(null);
-    const { id } = useParams<{ id: string }>();
-    console.log(id);
+    const { id } = useParams<{ id: any }>();
 
-    const userToken = localStorage.getItem('userToken');
+    const userToken = useSelector(selectToken);
     const history = useNavigate();
-    const dispatch = useDispatch();
+    const useAppDispatch = () => useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         fetch(`https://fakestoreapi.com/products/${id}`)
@@ -38,17 +42,22 @@ function ProductDetail() {
     }, [id]);
 
     const handleAddToCart = (productId: number) => {
-        if (!userToken) {
+        if (userToken) {
+            const decodedUser = jwt_decode<DecodeUser>(userToken);
+            const newCartItem: UpdatedCartItem = {
+                cartId: id,
+                userId: decodedUser.sub,
+                date: new Date().toISOString(),
+                products: {
+                    productId: productId,
+                    quantity: 1,
+                },
+            };
+            dispatch(addToCart(newCartItem));
+            history('/dashboard/cartlist');
+        } else {
             history('/login');
-            return;
         }
-        dispatch(
-            addToCart({
-                productId,
-                quantity: 1,
-            }),
-        );
-        history('/cart');
     };
 
     if (!product) {
@@ -80,16 +89,15 @@ function ProductDetail() {
                 <Grid item md={6}>
                     <Box sx={{ pl: 2 }}>
                         <Typography variant="overline" color="textSecondary" sx={{ textTransform: 'uppercase', mb: 1 }}>
-                            BRAND NAME
+                            NAME
                         </Typography>
                         <Typography variant="h4" color="textPrimary" sx={{ mb: 1 }}>
                             {product.title}
                         </Typography>
                         <Box sx={{ display: 'flex', mb: 2 }}>
                             <Typography variant="body2" color="textPrimary" sx={{ mr: 1 }}>
-                                {product.rating.rate}
+                                <Rating name="size-small" value={product.rating.rate} precision={0.1} size="small" />
                             </Typography>
-                            <Star color="error" sx={{ fontSize: 18, verticalAlign: 'middle' }} />
                         </Box>
                         <Typography variant="body2" color="textPrimary" sx={{ textTransform: 'capitalize', mb: 2 }}>
                             {product.category}
@@ -130,6 +138,6 @@ function ProductDetail() {
             </Grid>
         </Box>
     );
-}
+};
 
 export default ProductDetail;

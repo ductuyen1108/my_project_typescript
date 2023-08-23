@@ -1,4 +1,4 @@
-import { Box, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { Box, Button, Divider, List, ListItem, ListItemText, Typography } from '@mui/material';
 import React from 'react';
 import { useState } from 'react';
 import { Categories, Products } from '../../components';
@@ -7,6 +7,7 @@ import { setCategory } from '../../slice/filtersSlice';
 
 const Shop: React.FC = () => {
     const [isVisible, setIsVisible] = useState<boolean>(false);
+    const [currentLimit, setCurrentLimit] = useState<number>(6);
     const dispatch = useDispatch();
 
     const toggleCategories = () => {
@@ -20,11 +21,20 @@ const Shop: React.FC = () => {
         dispatch(setCategory(category));
     };
 
+    const handleLoadMore = () => {
+        setCurrentLimit((prev) => prev + 6);
+    };
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
             <Box sx={{ display: 'flex', gap: [8], py: '35px' }}>
-                <Products />
-                <Box sx={{ width: '30%' }}>
+                <Box width={'75%'} display={'flex'} flexDirection={'column'} alignItems={'center'}>
+                    <Products currentLimit={currentLimit} />
+                    <Button variant="outlined" onClick={handleLoadMore}>
+                        Load more
+                    </Button>
+                </Box>
+                <Box sx={{ width: '25%' }}>
                     <Typography sx={{ fontSize: '30px' }}>Filter by:</Typography>
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                         <List component="nav" aria-label="mailbox folders">

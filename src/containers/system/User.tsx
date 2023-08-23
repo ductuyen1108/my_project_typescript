@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import jwt_decode from 'jwt-decode';
 import { Box, CircularProgress, Grid, Paper, Typography } from '@mui/material';
+import { useSelector } from 'react-redux';
+import { selectToken } from '../../redux/selectors';
 
 interface UserData {
     name: {
@@ -17,17 +19,20 @@ interface UserData {
     };
 }
 
+interface DecodeUser {
+    sub: number;
+    user: string;
+}
+
 const User: React.FC = () => {
     const [userData, setUserData] = useState<UserData | null>(null);
-    const userToken = localStorage.getItem('userToken');
+    const userToken = useSelector(selectToken);
 
     useEffect(() => {
+        let decodedUser: DecodeUser | undefined;
         if (userToken) {
-            const decodedToken: any = jwt_decode(userToken);
-            console.log(decodedToken);
-
-            const userId: string = decodedToken.sub;
-            console.log(userId);
+            decodedUser = jwt_decode<DecodeUser>(userToken);
+            const userId = decodedUser.sub;
             fetch(`https://fakestoreapi.com/users/${userId}`)
                 .then((res) => res.json())
                 .then((data: UserData) => {

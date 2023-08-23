@@ -12,40 +12,44 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-
 import jwt_decode from 'jwt-decode';
-import { menuHeader, settings } from '../utils/menu';
-import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { userLogOut } from '../slice/userSlice';
 
-interface RootState {
-    user: {
-        user: { token: string } | null;
-    };
+import { useState } from 'react';
+import { menuHeader, settings } from '../utils/menu';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectToken } from '../redux/selectors';
+import { logoutUser } from '../slice/authSlice';
+
+interface DecodeUser {
+    sub: number;
+    user: string;
 }
 
 const Header: React.FC = () => {
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-    const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+    const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
+    const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
     const dispatch = useDispatch();
     const history = useNavigate();
 
-    const { user } = useSelector((state: RootState) => state.user);
+    const userToken = useSelector(selectToken);
+    console.log(userToken);
 
-    interface DecodedUser {
-        user: string;
-        token: string;
+    let decodedUser: DecodeUser | undefined;
+    if (userToken) {
+        decodedUser = jwt_decode<DecodeUser>(userToken);
     }
 
-    const decodedUser: DecodedUser | null = user && user.token ? jwt_decode(user.token) : null;
-
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElNav(event.currentTarget);
+        if (event.currentTarget) {
+            setAnchorElNav(event.currentTarget);
+        }
     };
     const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-        setAnchorElUser(event.currentTarget);
+        if (event.currentTarget) {
+            setAnchorElUser(event.currentTarget);
+        }
     };
 
     const handleCloseNavMenu = () => {
@@ -57,8 +61,7 @@ const Header: React.FC = () => {
     };
 
     const handleLogOut = () => {
-        localStorage.removeItem('userToken');
-        dispatch(userLogOut() as any);
+        dispatch(logoutUser());
         history('/login');
     };
 
@@ -67,23 +70,24 @@ const Header: React.FC = () => {
             <Container maxWidth="xl">
                 <Toolbar disableGutters>
                     <AdbIcon sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }} />
-                    <Typography
-                        variant="h6"
-                        noWrap
-                        component="a"
-                        href="/"
-                        sx={{
-                            mr: 2,
-                            display: { xs: 'none', md: 'flex' },
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        LOGO
-                    </Typography>
+                    <NavLink to="/">
+                        <Typography
+                            variant="h6"
+                            noWrap
+                            component="a"
+                            sx={{
+                                mr: 2,
+                                display: { xs: 'none', md: 'flex' },
+                                fontFamily: 'monospace',
+                                fontWeight: 700,
+                                letterSpacing: '.3rem',
+                                color: 'inherit',
+                                textDecoration: 'none',
+                            }}
+                        >
+                            LOGO
+                        </Typography>
+                    </NavLink>
 
                     <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
                         <IconButton
@@ -115,42 +119,43 @@ const Header: React.FC = () => {
                             }}
                         >
                             {menuHeader.map((item) => (
-                                <Link key={item.text} to={item.path} style={{ textDecoration: 'none' }}>
+                                <NavLink key={item.text} to={item.path} style={{ textDecoration: 'none' }}>
                                     <MenuItem onClick={handleCloseNavMenu}>
                                         <Typography textAlign="center" color="black">
                                             {item.text}
                                         </Typography>
                                     </MenuItem>
-                                </Link>
+                                </NavLink>
                             ))}
                         </Menu>
                     </Box>
                     <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
-                    <Typography
-                        variant="h5"
-                        noWrap
-                        component="a"
-                        href="/"
-                        sx={{
-                            mr: 2,
-                            display: { xs: 'flex', md: 'none' },
-                            flexGrow: 1,
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        LOGO
-                    </Typography>
+                    <NavLink to="/">
+                        <Typography
+                            variant="h5"
+                            noWrap
+                            component="a"
+                            sx={{
+                                mr: 2,
+                                display: { xs: 'flex', md: 'none' },
+                                flexGrow: 1,
+                                fontFamily: 'monospace',
+                                fontWeight: 700,
+                                letterSpacing: '.3rem',
+                                color: 'inherit',
+                                textDecoration: 'none',
+                            }}
+                        >
+                            LOGO
+                        </Typography>
+                    </NavLink>
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         {menuHeader.map((item) => (
-                            <Link key={item.text} to={item.path} style={{ textDecoration: 'none' }}>
+                            <NavLink key={item.text} to={item.path} style={{ textDecoration: 'none' }}>
                                 <Button onClick={handleCloseNavMenu} sx={{ my: 2, color: 'black', display: 'block' }}>
                                     {item.text}
                                 </Button>
-                            </Link>
+                            </NavLink>
                         ))}
                     </Box>
                     {decodedUser ? (
@@ -185,9 +190,9 @@ const Header: React.FC = () => {
                                 >
                                     {settings.map((setting) => (
                                         <MenuItem key={setting.text} onClick={handleCloseUserMenu}>
-                                            <Link to={setting.path}>
+                                            <NavLink to={setting.path}>
                                                 <Typography textAlign="center">{setting.text}</Typography>
-                                            </Link>
+                                            </NavLink>
                                         </MenuItem>
                                     ))}
                                     <MenuItem onClick={handleLogOut}>
@@ -197,9 +202,9 @@ const Header: React.FC = () => {
                             </Box>
                         </>
                     ) : (
-                        <Link to="/login">
+                        <NavLink to="/login">
                             <Button variant="outlined">Log in</Button>
-                        </Link>
+                        </NavLink>
                     )}
                 </Toolbar>
             </Container>

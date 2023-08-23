@@ -15,14 +15,19 @@ interface ProductList {
     price: number;
 }
 
-const Products: React.FC = () => {
+interface Props {
+    currentLimit: number;
+}
+
+const Products: React.FC<Props> = ({ currentLimit }) => {
     const [products, setproducts] = useState<ProductList[]>([]);
+
     const selectedCategory = useSelector(filterSelectedCategory);
 
     useEffect(() => {
         const apiUrl = selectedCategory
             ? `https://fakestoreapi.com/products/category/${selectedCategory}`
-            : 'https://fakestoreapi.com/products';
+            : `https://fakestoreapi.com/products?limit=${currentLimit}`;
 
         fetch(apiUrl)
             .then((res) => res.json())
@@ -32,7 +37,7 @@ const Products: React.FC = () => {
             .catch((err) => {
                 console.log(err);
             });
-    }, [selectedCategory]);
+    }, [selectedCategory, currentLimit]);
 
     return (
         <Grid container spacing={2} padding="20px">

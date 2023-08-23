@@ -21,7 +21,11 @@ const ProductName: React.FC<Props> = ({ productId }) => {
                 console.log(error);
             });
     }, [productId]);
-    return <Typography>{product?.title}</Typography>;
+    return (
+        <Typography sx={{ overflow: 'hidden', width: '300px', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+            {product?.title}
+        </Typography>
+    );
 };
 
 export default ProductName;

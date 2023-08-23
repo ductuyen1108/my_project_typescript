@@ -1,39 +1,32 @@
 import { useState } from 'react';
 import React from 'react';
-import { loginUser } from '../../slice/userSlice';
+import { loginUser } from '../../slice/authSlice';
 import { Avatar, Box, Button, Checkbox, FormControlLabel, Grid, Paper, TextField, Typography } from '@mui/material';
 import { Lock } from '@mui/icons-material';
-import { RootState } from '../../redux/store';
 import { useDispatch, useSelector } from 'react-redux';
+import type { AppDispatch } from '../../redux/store';
 import { useNavigate } from 'react-router-dom';
-
-interface UserCredentials {
-    username: string;
-    password: string;
-}
+import { errorLogin } from '../../redux/selectors';
 
 const Login: React.FC = () => {
-    const [username, setUsername] = useState<string>();
-    const [password, setPassword] = useState<string>();
+    const [username, setUsername] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
 
-    const { loading, error } = useSelector((state: RootState) => state.user);
+    const useAppDispatch = () => useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
     const history = useNavigate();
-    const dispatch = useDispatch();
+
+    const error = useSelector(errorLogin);
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
-        let userCredentials: UserCredentials = {
+        const credentials = {
             username,
             password,
         };
-        dispatch(loginUser(userCredentials)).then((result) => {
-            if (loginUser.fulfilled.match(result)) {
-                setUsername('');
-                setPassword('');
-                history('/');
-            }
-        });
+        dispatch(loginUser(credentials));
+        history('/');
     };
 
     const paperStyle = { padding: 20, height: '70vh', width: 400, margin: '20px auto' };
@@ -87,7 +80,7 @@ const Login: React.FC = () => {
                             <Typography>Forgot password?</Typography>
                         </Box>
                         <Button variant="contained" fullWidth type="submit">
-                            {loading ? 'Loading...' : 'Login'}
+                            Log in
                         </Button>
                         {error && <Box sx={{ backgroundColor: 'red', px: [4], py: [2], color: 'white' }}>{error}</Box>}
                     </form>

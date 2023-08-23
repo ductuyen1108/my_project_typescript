@@ -12,7 +12,7 @@ const path = {
     CART_LIST: 'cartlist',
     CART_EDIT: 'cartedit/:id',
     CART_ADD: 'cartadd',
-    CART_USER: 'cart',
+    USER_CART: 'cart',
     USER_LIST: 'userlist',
     DASHBOARD: 'dashboard',
     STAR: '*',

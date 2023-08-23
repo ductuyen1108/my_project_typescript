@@ -12,8 +12,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import HomeIcon from '@mui/icons-material/Home';
 import { NavLink } from 'react-router-dom';
 import { menuDashboard } from '../utils/menu';
+import { Button, Typography } from '@mui/material';
 
 const drawerWidth = 240;
 
@@ -68,7 +70,15 @@ const Admin: React.FC = () => {
         <Box sx={{ display: 'flex' }}>
             <CssBaseline />
             <Drawer variant="permanent" open={open}>
-                <DrawerHeader sx={{ display: 'flex' }}>
+                <DrawerHeader sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    {open && (
+                        <NavLink to="/">
+                            <Button sx={{ px: '13px', display: 'flex', gap: '5px' }}>
+                                <HomeIcon />
+                                <Typography>HOME</Typography>
+                            </Button>
+                        </NavLink>
+                    )}
                     <IconButton onClick={() => setOpen(!open)}>
                         {open ? <ChevronLeftIcon /> : <ChevronRightIcon />}
                     </IconButton>

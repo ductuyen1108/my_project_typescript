@@ -30,7 +30,7 @@ export const menuHeader: MenuSetting[] = [
 export const settings: MenuSetting[] = [
     {
         text: 'Profile',
-        path: 'user,',
+        path: 'user',
     },
     {
         text: 'Dashboard',

@@ -65,10 +65,10 @@ export const updateCart = createAsyncThunk('cart/updateCart', async (updatedCart
 });
 
 export const deleteCartItem = createAsyncThunk('cart/delete', async (payload: CartItem) => {
-    const respone = await fetch(`https://fakestoreapi.com/carts/${payload.cartId}`, {
+    const response = await fetch(`https://fakestoreapi.com/carts/${payload.cartId}`, {
         method: 'DELETE',
     });
-    const data = await respone.json();
+    const data = await response.json();
     return data;
 });
 
@@ -95,8 +95,12 @@ const cartReducer = createSlice({
                 state.items = action.payload;
             })
             .addCase(deleteCartItem.fulfilled, (state, action) => {
-                const deletedCartId = action.payload.id;
-                state.items = state.items.filter((cartItem) => cartItem.cartId !== deletedCartId);
+                if (Array.isArray(state.items)) {
+                    const deletedCartId = action.payload.id;
+                    state.items = state.items.filter((cartItem) => cartItem.cartId !== deletedCartId);
+                } else {
+                    console.error('state.items is not an array');
+                }
             });
     },
 });

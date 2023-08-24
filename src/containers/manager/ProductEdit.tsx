@@ -1,14 +1,21 @@
 import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, Paper, TextField, Typography } from '@mui/material';
+import { useDispatch } from 'react-redux';
+import { updateProduct } from '../../slice/productSlice';
+import type { AppDispatch } from '../../redux/store';
 
 interface Product {
     id: number;
     title: string;
     price: number;
     description: string;
-    image: string;
     category: string;
+    image: string;
+    rating?: {
+        rate: number;
+        count: number;
+    };
 }
 
 const ProductEdit: React.FC = () => {
@@ -23,6 +30,9 @@ const ProductEdit: React.FC = () => {
         image: '',
         category: '',
     });
+
+    const useAppDispatch = () => useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         fetch(`https://fakestoreapi.com/products/${id}`)
@@ -43,17 +53,24 @@ const ProductEdit: React.FC = () => {
         });
     };
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
+        try {
+            await dispatch(
+                updateProduct({
+                    productId: formData.id,
+                    title: formData.title,
+                    price: formData.price,
+                    description: formData.description,
+                    image: formData.image,
+                    category: formData.category,
+                }),
+            );
 
-        fetch(`https://fakestoreapi.com/products/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(formData),
-        })
-            .then((res) => res.json())
-            .then((json) => console.log(json));
-
-        history('/productlist');
+            history('/dashboard/productlist');
+        } catch (error) {
+            console.error('Error updating product:', error);
+        }
     };
 
     return (

@@ -132,197 +132,201 @@ const UserCart: React.FC = () => {
     };
 
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', py: '20px', fontWeight: '600', fontSize: '25px' }}>
-                <Typography variant="h2">Cart</Typography>
-            </Box>
-            <Box
-                sx={{
-                    position: 'relative',
-                    overFlowX: 'auto',
-                    boxShadow: '0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -1px rgba(0,0,0,0.06)',
-                    borderRadius: '0.5rem',
-                    width: '1000px',
-                    height: '245px',
-                    mb: '30px',
-                }}
-            >
-                <TableContainer component={Paper} sx={{ maxHeight: '440px', overFlowY: 'auto' }}>
-                    <Table>
-                        <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>
-                            <TableRow>
-                                <TableCell>Id</TableCell>
-                                <TableCell>User</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Products</TableCell>
-                                <TableCell sx={{ px: '25px' }}>Action</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {carts.map((cart, cartIndex) => (
-                                <Fragment key={cart.id}>
-                                    <TableRow
-                                        key={cart.id}
-                                        sx={{
-                                            ':hover': {
-                                                backgroundColor: 'rgba(0,0,0,0.05)',
-                                            },
-                                        }}
-                                    >
-                                        <TableCell>{cart.id}</TableCell>
-                                        <TableCell>
-                                            <NameUser userId={cart.userId} />
-                                        </TableCell>
-                                        <TableCell>{cart.date}</TableCell>
-                                        <TableCell>
-                                            <Button onClick={() => toggleExpand(cart.id)}>
-                                                {expandedCartId === cart.id ? (
-                                                    <KeyboardArrowUpIcon />
-                                                ) : (
-                                                    <KeyboardArrowDownIcon />
-                                                )}
-                                            </Button>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Button
-                                                variant="text"
-                                                color="warning"
-                                                onClick={() => handleOpenDialog(cart.id)}
-                                            >
-                                                <DeleteIcon />
-                                            </Button>
-                                            <Dialog
-                                                open={openDialog}
-                                                onClose={handleCloseDialog}
-                                                aria-labelledby="alert-dialog-title"
-                                                aria-describedby="alert-dialog-description"
-                                            >
-                                                <DialogTitle id="alert-dialog-title">
-                                                    {'Do you really want to delete?'}
-                                                </DialogTitle>
-                                                <DialogContent>
-                                                    <DialogContentText id="alert-dialog-description">
-                                                        When you click delete, you will permanently delete the cart.
-                                                    </DialogContentText>
-                                                </DialogContent>
-                                                <DialogActions>
-                                                    <Button color="warning" onClick={handleConfirmDelete}>
-                                                        Delete
-                                                    </Button>
-                                                    <Button color="info" autoFocus onClick={handleCloseDialog}>
-                                                        Cancel
-                                                    </Button>
-                                                </DialogActions>
-                                            </Dialog>
-                                        </TableCell>
-                                    </TableRow>
-                                    {expandedCartId === cart.id && (
-                                        <TableRow>
-                                            <TableCell colSpan={5}>
-                                                <Table>
-                                                    <TableHead>
-                                                        <TableRow>
-                                                            <TableCell>Product name</TableCell>
-                                                            <TableCell>Image</TableCell>
-                                                            <TableCell sx={{ paddingLeft: '42px' }}>Quantity</TableCell>
-                                                            <TableCell>Total</TableCell>
-                                                        </TableRow>
-                                                    </TableHead>
-                                                    <TableBody>
-                                                        {cart.products.map((product, productIndex) => (
-                                                            <TableRow key={product.productId}>
-                                                                <TableCell sx={{ width: '300px' }}>
-                                                                    <ProductName productId={product.productId} />
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <ImageProduct productId={product.productId} />
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <Box display={'flex'} gap={3}>
-                                                                        <RemoveIcon
-                                                                            color="info"
-                                                                            sx={{ cursor: 'pointer' }}
-                                                                            onClick={() => {
-                                                                                setShowUpdateBtn(true);
-                                                                                const newQuantity = Math.max(
-                                                                                    0,
-                                                                                    product.quantity - 1,
-                                                                                );
-                                                                                handleQuantityChange(
-                                                                                    cartIndex,
-                                                                                    productIndex,
-                                                                                    newQuantity,
-                                                                                );
-                                                                            }}
-                                                                        />
-                                                                        <Typography width={'10px'}>
-                                                                            {product.quantity}
-                                                                        </Typography>
-                                                                        <AddIcon
-                                                                            color="info"
-                                                                            sx={{ cursor: 'pointer' }}
-                                                                            onClick={() => {
-                                                                                setShowUpdateBtn(true);
-                                                                                const newQuantity =
-                                                                                    product.quantity + 1;
-                                                                                handleQuantityChange(
-                                                                                    cartIndex,
-                                                                                    productIndex,
-                                                                                    newQuantity,
-                                                                                );
-                                                                            }}
-                                                                        />
-                                                                    </Box>
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <PriceProduct
-                                                                        productId={product.productId}
-                                                                        quantityProduct={product.quantity}
-                                                                    />
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {showUpdateBtn && (
-                                                                        <Button
-                                                                            variant="text"
-                                                                            onClick={() => {
-                                                                                const productId = product.productId;
-                                                                                const quantity = product.quantity;
-                                                                                const cartId = cart.id;
-                                                                                const userId = cart.userId;
-                                                                                handleUpdateCart(
-                                                                                    productId,
-                                                                                    quantity,
-                                                                                    cartId,
-                                                                                    userId,
-                                                                                );
-                                                                            }}
-                                                                        >
-                                                                            Update
-                                                                        </Button>
-                                                                    )}
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
+            <Paper sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: '20px', width: '1150px' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', py: '20px', fontWeight: '600', fontSize: '25px' }}>
+                    <Typography variant="h2">Cart</Typography>
+                </Box>
+                <Box
+                    sx={{
+                        position: 'relative',
+                        overFlowX: 'auto',
+                        boxShadow: '0px 4px 6px -1px rgba(0,0,0,0.1), 0px 2px 4px -1px rgba(0,0,0,0.06)',
+                        borderRadius: '0.5rem',
+                        width: '1000px',
+                        height: '245px',
+                        mb: '30px',
+                    }}
+                >
+                    <TableContainer component={Paper} sx={{ maxHeight: '440px', overFlowY: 'auto' }}>
+                        <Table>
+                            <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>
+                                <TableRow>
+                                    <TableCell>Id</TableCell>
+                                    <TableCell>User</TableCell>
+                                    <TableCell>Date</TableCell>
+                                    <TableCell>Products</TableCell>
+                                    <TableCell sx={{ px: '25px' }}>Action</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {carts.map((cart, cartIndex) => (
+                                    <Fragment key={cart.id}>
+                                        <TableRow
+                                            key={cart.id}
+                                            sx={{
+                                                ':hover': {
+                                                    backgroundColor: 'rgba(0,0,0,0.05)',
+                                                },
+                                            }}
+                                        >
+                                            <TableCell>{cart.id}</TableCell>
+                                            <TableCell>
+                                                <NameUser userId={cart.userId} />
+                                            </TableCell>
+                                            <TableCell>{cart.date}</TableCell>
+                                            <TableCell>
+                                                <Button onClick={() => toggleExpand(cart.id)}>
+                                                    {expandedCartId === cart.id ? (
+                                                        <KeyboardArrowUpIcon />
+                                                    ) : (
+                                                        <KeyboardArrowDownIcon />
+                                                    )}
+                                                </Button>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Button
+                                                    variant="text"
+                                                    color="warning"
+                                                    onClick={() => handleOpenDialog(cart.id)}
+                                                >
+                                                    <DeleteIcon />
+                                                </Button>
+                                                <Dialog
+                                                    open={openDialog}
+                                                    onClose={handleCloseDialog}
+                                                    aria-labelledby="alert-dialog-title"
+                                                    aria-describedby="alert-dialog-description"
+                                                >
+                                                    <DialogTitle id="alert-dialog-title">
+                                                        {'Do you really want to delete?'}
+                                                    </DialogTitle>
+                                                    <DialogContent>
+                                                        <DialogContentText id="alert-dialog-description">
+                                                            When you click delete, you will permanently delete the cart.
+                                                        </DialogContentText>
+                                                    </DialogContent>
+                                                    <DialogActions>
+                                                        <Button color="warning" onClick={handleConfirmDelete}>
+                                                            Delete
+                                                        </Button>
+                                                        <Button color="info" autoFocus onClick={handleCloseDialog}>
+                                                            Cancel
+                                                        </Button>
+                                                    </DialogActions>
+                                                </Dialog>
                                             </TableCell>
                                         </TableRow>
-                                    )}
-                                </Fragment>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                <TablePagination
-                    rowsPerPageOptions={[5, 10, 20]}
-                    component="div"
-                    count={carts.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                />
-            </Box>
+                                        {expandedCartId === cart.id && (
+                                            <TableRow>
+                                                <TableCell colSpan={5}>
+                                                    <Table>
+                                                        <TableHead>
+                                                            <TableRow>
+                                                                <TableCell>Product name</TableCell>
+                                                                <TableCell>Image</TableCell>
+                                                                <TableCell sx={{ paddingLeft: '42px' }}>
+                                                                    Quantity
+                                                                </TableCell>
+                                                                <TableCell>Total</TableCell>
+                                                            </TableRow>
+                                                        </TableHead>
+                                                        <TableBody>
+                                                            {cart.products.map((product, productIndex) => (
+                                                                <TableRow key={product.productId}>
+                                                                    <TableCell sx={{ width: '300px' }}>
+                                                                        <ProductName productId={product.productId} />
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <ImageProduct productId={product.productId} />
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <Box display={'flex'} gap={3}>
+                                                                            <RemoveIcon
+                                                                                color="info"
+                                                                                sx={{ cursor: 'pointer' }}
+                                                                                onClick={() => {
+                                                                                    setShowUpdateBtn(true);
+                                                                                    const newQuantity = Math.max(
+                                                                                        0,
+                                                                                        product.quantity - 1,
+                                                                                    );
+                                                                                    handleQuantityChange(
+                                                                                        cartIndex,
+                                                                                        productIndex,
+                                                                                        newQuantity,
+                                                                                    );
+                                                                                }}
+                                                                            />
+                                                                            <Typography width={'10px'}>
+                                                                                {product.quantity}
+                                                                            </Typography>
+                                                                            <AddIcon
+                                                                                color="info"
+                                                                                sx={{ cursor: 'pointer' }}
+                                                                                onClick={() => {
+                                                                                    setShowUpdateBtn(true);
+                                                                                    const newQuantity =
+                                                                                        product.quantity + 1;
+                                                                                    handleQuantityChange(
+                                                                                        cartIndex,
+                                                                                        productIndex,
+                                                                                        newQuantity,
+                                                                                    );
+                                                                                }}
+                                                                            />
+                                                                        </Box>
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        <PriceProduct
+                                                                            productId={product.productId}
+                                                                            quantityProduct={product.quantity}
+                                                                        />
+                                                                    </TableCell>
+                                                                    <TableCell>
+                                                                        {showUpdateBtn && (
+                                                                            <Button
+                                                                                variant="text"
+                                                                                onClick={() => {
+                                                                                    const productId = product.productId;
+                                                                                    const quantity = product.quantity;
+                                                                                    const cartId = cart.id;
+                                                                                    const userId = cart.userId;
+                                                                                    handleUpdateCart(
+                                                                                        productId,
+                                                                                        quantity,
+                                                                                        cartId,
+                                                                                        userId,
+                                                                                    );
+                                                                                }}
+                                                                            >
+                                                                                Update
+                                                                            </Button>
+                                                                        )}
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </Fragment>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                    <TablePagination
+                        rowsPerPageOptions={[5, 10, 20]}
+                        component="div"
+                        count={carts.length}
+                        rowsPerPage={rowsPerPage}
+                        page={page}
+                        onPageChange={handleChangePage}
+                        onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                </Box>
+            </Paper>
         </Box>
     );
 };

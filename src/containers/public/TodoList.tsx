@@ -1,7 +1,6 @@
-import React from 'react';
-import { Alert, Box, Button, List, ListItem, TextField, Typography } from '@mui/material';
-import { Delete } from '@mui/icons-material';
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Alert, Box, Button, List, ListItem, TextField, Typography, Paper } from '@mui/material';
+import { Delete, Edit, Save, Cancel } from '@mui/icons-material';
 
 interface Todo {
     id: string;
@@ -12,6 +11,8 @@ const TodoList: React.FC = () => {
     const [work, setWork] = useState<string>('');
     const [todos, setTodos] = useState<Todo[]>([]);
     const [showAlert, setShowAlert] = useState<boolean>(false);
+    const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
+    const [editedTodo, setEditedTodo] = useState<string>('');
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -34,6 +35,7 @@ const TodoList: React.FC = () => {
             if (inputRef.current) {
                 inputRef.current.focus();
             }
+            setShowAlert(false);
         }
     };
 
@@ -41,41 +43,144 @@ const TodoList: React.FC = () => {
         setTodos((prev) => prev.filter((todo) => todo.id !== id));
     };
 
+    const handleEdit = (id: string, job: string) => {
+        setEditingTodoId(id);
+        setEditedTodo(job);
+    };
+
+    const handleSave = () => {
+        setTodos((prevTodos) =>
+            prevTodos.map((todo) => {
+                if (todo.id === editingTodoId) {
+                    return { ...todo, job: editedTodo };
+                }
+                return todo;
+            }),
+        );
+        setEditingTodoId(null);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingTodoId(null);
+        setEditedTodo('');
+    };
+
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            <Typography sx={{ marginBottom: '10px', marginTop: '10px', fontSize: '35px' }}>Todo List</Typography>
-            <Box>
-                <Box
-                    sx={{
-                        display: 'flex',
-                        gap: '35px',
-                        height: '40px',
-                        alignItems: 'center',
-                        marginBottom: '20px',
-                    }}
-                >
-                    <TextField label="Enter todo" variant="standard" value={work} ref={inputRef} fullWidth required />
-                    <Button variant="contained" sx={{ width: '150px' }} onClick={handleAdd}>
-                        Add
-                    </Button>
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                backgroundColor: '#f5f5f5',
+            }}
+        >
+            <Paper
+                sx={{
+                    width: '800px',
+                    height: '600px',
+                    mt: '30px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}
+            >
+                <Box sx={{ width: '600px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <Typography sx={{ marginBottom: '10px', marginTop: '10px', fontSize: '35px' }}>
+                        Todo List
+                    </Typography>
+                    <Box>
+                        <Box
+                            sx={{
+                                display: 'flex',
+                                gap: '35px',
+                                height: '40px',
+                                alignItems: 'center',
+                                marginBottom: '20px',
+                            }}
+                        >
+                            <TextField
+                                label="Enter todo"
+                                variant="standard"
+                                value={work}
+                                ref={inputRef}
+                                fullWidth
+                                required
+                                onChange={(e) => setWork(e.target.value)}
+                            />
+                            <Button variant="contained" sx={{ width: '150px' }} onClick={handleAdd}>
+                                Add
+                            </Button>
+                        </Box>
+                        <Box>
+                            <List sx={{ width: '500px' }}>
+                                {todos.map((todo) => (
+                                    <ListItem
+                                        key={todo.id}
+                                        sx={{
+                                            display: 'flex',
+                                            width: '100%',
+                                            justifyContent: 'space-between',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Typography sx={{ width: '220px' }}>
+                                            {editingTodoId === todo.id ? (
+                                                <TextField
+                                                    value={editedTodo}
+                                                    onChange={(e) => setEditedTodo(e.target.value)}
+                                                    fullWidth
+                                                    required
+                                                    autoFocus
+                                                />
+                                            ) : (
+                                                todo.job
+                                            )}
+                                        </Typography>
+                                        {editingTodoId === todo.id ? (
+                                            <Box display={'flex'} gap={2}>
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<Save />}
+                                                    onClick={handleSave}
+                                                    disabled={!editedTodo.trim()}
+                                                >
+                                                    Save
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<Cancel />}
+                                                    onClick={handleCancelEdit}
+                                                >
+                                                    Cancel
+                                                </Button>
+                                            </Box>
+                                        ) : (
+                                            <Box display={'flex'} gap={2}>
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<Edit />}
+                                                    onClick={() => handleEdit(todo.id, todo.job)}
+                                                >
+                                                    Edit
+                                                </Button>
+                                                <Button
+                                                    variant="outlined"
+                                                    startIcon={<Delete />}
+                                                    onClick={() => handleDelete(todo.id)}
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </Box>
+                                        )}
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+                    </Box>
+                    {showAlert && <Alert severity="error">Công việc đã thêm vào trước đó!</Alert>}
                 </Box>
-                <Box>
-                    <List>
-                        {todos.map((todo) => (
-                            <ListItem
-                                key={todo.id}
-                                sx={{ display: 'flex', width: '400px', justifyContent: 'space-between' }}
-                            >
-                                <Typography>{todo.job}</Typography>
-                                <Button variant="outlined" startIcon={<Delete />} onClick={() => handleDelete(todo.id)}>
-                                    Delete
-                                </Button>
-                            </ListItem>
-                        ))}
-                    </List>
-                </Box>
-            </Box>
-            {showAlert && <Alert severity="error">Công việc đã thêm vào trước đó!</Alert>}
+            </Paper>
         </Box>
     );
 };

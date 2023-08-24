@@ -21,6 +21,9 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NavLink } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../redux/store';
+import { daleteProductItem } from '../../slice/productSlice';
 
 interface Product {
     id: number;
@@ -28,6 +31,7 @@ interface Product {
     image: string;
     rating: {
         rate: number;
+        count: number;
     };
     category: string;
     price: number;
@@ -40,6 +44,9 @@ const ProductList: React.FC = () => {
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    const useAppDispatch = () => useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
@@ -61,17 +68,6 @@ const ProductList: React.FC = () => {
             });
     }, []);
 
-    const fetchProducts = () => {
-        fetch('https://fakestoreapi.com/products')
-            .then((res) => res.json())
-            .then((data: Product[]) => {
-                setProducts(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    };
-
     const handleClickOpen = (product: Product) => {
         setOpen(true);
         setSelectedId(product.id);
@@ -81,13 +77,16 @@ const ProductList: React.FC = () => {
         setOpen(false);
     };
 
-    const handleConfirmDelete = () => {
-        fetch(`https://fakestoreapi.com/products/${selectedId}`, { method: 'DELETE' })
-            .then((res) => res.json())
-            .then((json) => console.log(json));
-        setOpen(false);
-        setSelectedId(null);
-        fetchProducts();
+    const handleConfirmDelete = async () => {
+        if (selectedId !== null) {
+            try {
+                await dispatch(daleteProductItem(selectedId));
+                setOpen(false);
+                setSelectedId(null);
+            } catch (error) {
+                console.error('Error deleting product:', error);
+            }
+        }
     };
 
     return (

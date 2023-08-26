@@ -100,7 +100,8 @@ const TodoList: React.FC = () => {
                             }}
                         >
                             <TextField
-                                label="Enter todo"
+                                //label="Enter todo"
+                                placeholder="Enter todo"
                                 variant="standard"
                                 value={work}
                                 ref={inputRef}

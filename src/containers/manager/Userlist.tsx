@@ -12,26 +12,15 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
-
-interface User {
-    id: number;
-    email: string;
-    name: {
-        firstname: string;
-        lastname: string;
-    };
-    phone: string;
-    address: {
-        street: string;
-        city: string;
-    };
-}
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { selectFormattedUsers } from '../../redux/selectors';
 
 const Userlist: React.FC = () => {
-    const [users, setUsers] = useState<User[]>([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
+
+    const userlist = useSelector(selectFormattedUsers);
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
@@ -42,17 +31,9 @@ const Userlist: React.FC = () => {
         setPage(0);
     };
 
-    useEffect(() => {
-        fetch('https://fakestoreapi.com/users')
-            .then((res) => res.json())
-            .then((data: User[]) => setUsers(data))
-            .catch((err) => {
-                console.log(err);
-            });
-    }, []);
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {users ? (
+            {userlist ? (
                 <>
                     <Box
                         sx={{
@@ -88,36 +69,38 @@ const Userlist: React.FC = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user) => (
-                                        <TableRow
-                                            key={user.id}
-                                            sx={{
-                                                ':hover': {
-                                                    backgroundColor: 'rgba(0,0,0,0.05)',
-                                                },
-                                            }}
-                                        >
-                                            <TableCell
+                                    {userlist
+                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                                        .map((user) => (
+                                            <TableRow
+                                                key={user.id}
                                                 sx={{
-                                                    maxWidth: '200px',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: 'nowrap',
-                                                    textTransform: 'capitalize',
+                                                    ':hover': {
+                                                        backgroundColor: 'rgba(0,0,0,0.05)',
+                                                    },
                                                 }}
                                             >
-                                                {user.name.firstname} {user.name.lastname}
-                                            </TableCell>
-                                            <TableCell>{user.email}</TableCell>
-                                            <TableCell sx={{ textTransform: 'capitalize' }}>
-                                                {user.address.street}
-                                            </TableCell>
-                                            <TableCell sx={{ textTransform: 'capitalize' }}>
-                                                {user.address.city}
-                                            </TableCell>
-                                            <TableCell>{user.phone}</TableCell>
-                                        </TableRow>
-                                    ))}
+                                                <TableCell
+                                                    sx={{
+                                                        maxWidth: '200px',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                        textTransform: 'capitalize',
+                                                    }}
+                                                >
+                                                    {user.name.firstname} {user.name.lastname}
+                                                </TableCell>
+                                                <TableCell>{user.email}</TableCell>
+                                                <TableCell sx={{ textTransform: 'capitalize' }}>
+                                                    {user.address.street}
+                                                </TableCell>
+                                                <TableCell sx={{ textTransform: 'capitalize' }}>
+                                                    {user.address.city}
+                                                </TableCell>
+                                                <TableCell>{user.phone}</TableCell>
+                                            </TableRow>
+                                        ))}
                                 </TableBody>
                             </Table>
                         </TableContainer>
@@ -125,7 +108,7 @@ const Userlist: React.FC = () => {
                             <TablePagination
                                 rowsPerPageOptions={[5, 10, 20]}
                                 component="div"
-                                count={users.length}
+                                count={userlist.length}
                                 rowsPerPage={rowsPerPage}
                                 page={page}
                                 onPageChange={handleChangePage}

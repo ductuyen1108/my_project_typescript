@@ -2,11 +2,6 @@ import React from 'react';
 import {
     Box,
     Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
     Paper,
     Table,
     TableBody,
@@ -17,7 +12,6 @@ import {
     TableRow,
     Typography,
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AddIcon from '@mui/icons-material/Add';
@@ -28,7 +22,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectToken } from '../../redux/selectors';
 import { ImageProduct, PriceProduct, ProductName, NameUser } from '../../components';
-import { CartItem, UpdatedCartItem, deleteCartItem, updateCart } from '../../slice/cartSlice';
+import { UpdatedCartItem, updateCart } from '../../slice/cartSlice';
 import type { AppDispatch } from '../../redux/store';
 
 interface Cart {
@@ -46,9 +40,8 @@ export interface DecodeUser {
 const UserCart: React.FC = () => {
     const [carts, setCarts] = useState<Cart[]>([]);
     const [expandedCartId, setExpandedCartId] = useState<number | null>(null);
-    const [openDialog, setOpenDialog] = useState(false);
-    const [selectedId, setSelectedId] = useState<number | null>(null);
     const [quantityUpdated, setQuantityUpdated] = useState<number | null>(null);
+    const [idProductEdit, setIdProductEdit] = useState<number | null>(null);
 
     console.log(quantityUpdated);
 
@@ -88,15 +81,6 @@ const UserCart: React.FC = () => {
         setExpandedCartId((prev) => (prev === cartId ? null : cartId));
     };
 
-    const handleOpenDialog = (cartId: number) => {
-        setOpenDialog(true);
-        setSelectedId(cartId);
-    };
-
-    const handleCloseDialog = () => {
-        setOpenDialog(false);
-    };
-
     const handleQuantityChange = (cartIndex: number, productIndex: number, newQuantity: number) => {
         const updatedCarts = [...carts];
         updatedCarts[cartIndex].products[productIndex].quantity = newQuantity;
@@ -106,34 +90,40 @@ const UserCart: React.FC = () => {
 
     const handleUpdateCart = (productId: number, quantity: number, cartId: number, userId: number) => {
         const updatedCartItem: UpdatedCartItem = {
-            cartId: cartId,
+            id: cartId,
             userId: userId,
             date: new Date().toISOString(),
-            products: {
-                productId: productId,
-                quantity: quantity,
-            },
+            products: [
+                {
+                    productId: productId,
+                    quantity: quantity,
+                },
+            ],
         };
         dispatch(updateCart(updatedCartItem));
         setShowUpdateBtn(false);
     };
 
-    const handleConfirmDelete = () => {
-        if (selectedId) {
-            const cartItemToDelete: CartItem = {
-                cartId: selectedId,
-            };
-
-            dispatch(deleteCartItem(cartItemToDelete));
-            setOpenDialog(false);
-            setSelectedId(null);
-            setQuantityUpdated(null);
-        }
-    };
-
     return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: '#f5f5f5' }}>
-            <Paper sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: '20px', width: '1150px' }}>
+        <Box
+            sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                backgroundColor: '#f5f5f5',
+                height: '100vh',
+            }}
+        >
+            <Paper
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    my: '20px',
+                    width: '1150px',
+                    height: '90vh',
+                }}
+            >
                 <Box sx={{ display: 'flex', flexDirection: 'column', py: '20px', fontWeight: '600', fontSize: '25px' }}>
                     <Typography variant="h2">Cart</Typography>
                 </Box>
@@ -156,7 +146,6 @@ const UserCart: React.FC = () => {
                                     <TableCell>User</TableCell>
                                     <TableCell>Date</TableCell>
                                     <TableCell>Products</TableCell>
-                                    <TableCell sx={{ px: '25px' }}>Action</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -183,38 +172,6 @@ const UserCart: React.FC = () => {
                                                         <KeyboardArrowDownIcon />
                                                     )}
                                                 </Button>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Button
-                                                    variant="text"
-                                                    color="warning"
-                                                    onClick={() => handleOpenDialog(cart.id)}
-                                                >
-                                                    <DeleteIcon />
-                                                </Button>
-                                                <Dialog
-                                                    open={openDialog}
-                                                    onClose={handleCloseDialog}
-                                                    aria-labelledby="alert-dialog-title"
-                                                    aria-describedby="alert-dialog-description"
-                                                >
-                                                    <DialogTitle id="alert-dialog-title">
-                                                        {'Do you really want to delete?'}
-                                                    </DialogTitle>
-                                                    <DialogContent>
-                                                        <DialogContentText id="alert-dialog-description">
-                                                            When you click delete, you will permanently delete the cart.
-                                                        </DialogContentText>
-                                                    </DialogContent>
-                                                    <DialogActions>
-                                                        <Button color="warning" onClick={handleConfirmDelete}>
-                                                            Delete
-                                                        </Button>
-                                                        <Button color="info" autoFocus onClick={handleCloseDialog}>
-                                                            Cancel
-                                                        </Button>
-                                                    </DialogActions>
-                                                </Dialog>
                                             </TableCell>
                                         </TableRow>
                                         {expandedCartId === cart.id && (
@@ -246,6 +203,7 @@ const UserCart: React.FC = () => {
                                                                                 color="info"
                                                                                 sx={{ cursor: 'pointer' }}
                                                                                 onClick={() => {
+                                                                                    setIdProductEdit(product.productId);
                                                                                     setShowUpdateBtn(true);
                                                                                     const newQuantity = Math.max(
                                                                                         0,
@@ -265,6 +223,7 @@ const UserCart: React.FC = () => {
                                                                                 color="info"
                                                                                 sx={{ cursor: 'pointer' }}
                                                                                 onClick={() => {
+                                                                                    setIdProductEdit(product.productId);
                                                                                     setShowUpdateBtn(true);
                                                                                     const newQuantity =
                                                                                         product.quantity + 1;
@@ -284,25 +243,28 @@ const UserCart: React.FC = () => {
                                                                         />
                                                                     </TableCell>
                                                                     <TableCell>
-                                                                        {showUpdateBtn && (
-                                                                            <Button
-                                                                                variant="text"
-                                                                                onClick={() => {
-                                                                                    const productId = product.productId;
-                                                                                    const quantity = product.quantity;
-                                                                                    const cartId = cart.id;
-                                                                                    const userId = cart.userId;
-                                                                                    handleUpdateCart(
-                                                                                        productId,
-                                                                                        quantity,
-                                                                                        cartId,
-                                                                                        userId,
-                                                                                    );
-                                                                                }}
-                                                                            >
-                                                                                Update
-                                                                            </Button>
-                                                                        )}
+                                                                        {showUpdateBtn &&
+                                                                            idProductEdit === product.productId && (
+                                                                                <Button
+                                                                                    variant="text"
+                                                                                    onClick={() => {
+                                                                                        const productId =
+                                                                                            product.productId;
+                                                                                        const quantity =
+                                                                                            product.quantity;
+                                                                                        const cartId = cart.id;
+                                                                                        const userId = cart.userId;
+                                                                                        handleUpdateCart(
+                                                                                            productId,
+                                                                                            quantity,
+                                                                                            cartId,
+                                                                                            userId,
+                                                                                        );
+                                                                                    }}
+                                                                                >
+                                                                                    Update
+                                                                                </Button>
+                                                                            )}
                                                                     </TableCell>
                                                                 </TableRow>
                                                             ))}

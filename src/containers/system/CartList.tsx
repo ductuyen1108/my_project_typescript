@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useState } from 'react';
 import {
     Box,
     Button,
@@ -15,8 +15,12 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { ImageProduct, NameUser, PriceProduct, ProductName } from '../../components';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectCarts } from '../../redux/selectors';
+import { AppDispatch } from '../../redux/store';
+import { CartItem, deleteCartItem } from '../../slice/cartSlice';
 
-interface Cart {
+/* interface Cart {
     id: number;
     userId: number;
     date: string;
@@ -26,25 +30,18 @@ interface Cart {
             quantity: number;
         },
     ];
-}
+} */
 
 const CartList: React.FC = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [expandedCartId, setExpandedCartId] = useState<number | null>(null);
 
-    const [carts, setCarts] = useState<Cart[]>([]);
+    const cartList = useSelector(selectCarts);
+    console.log(cartList);
 
-    useEffect(() => {
-        fetch('https://fakestoreapi.com/carts')
-            .then((res) => res.json())
-            .then((data: Cart[]) => {
-                setCarts(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, []);
+    const useAppDispatch = () => useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
@@ -57,6 +54,18 @@ const CartList: React.FC = () => {
 
     const toggleExpand = (cartId: number) => {
         setExpandedCartId((prev) => (prev === cartId ? null : cartId));
+    };
+
+    const handleDelete = async (id: number) => {
+        try {
+            const cartId: CartItem = {
+                cartId: id,
+            };
+            dispatch(deleteCartItem(cartId));
+        } catch (error) {
+            console.log(error);
+        }
+        console.log('cartID', id);
     };
 
     return (
@@ -79,14 +88,15 @@ const CartList: React.FC = () => {
                     <Table>
                         <TableHead sx={{ position: 'sticky', top: 0, zIndex: 1, background: 'white' }}>
                             <TableRow>
-                                <TableCell>Id</TableCell>
+                                <TableCell>STT</TableCell>
                                 <TableCell>User</TableCell>
                                 <TableCell>Date</TableCell>
                                 <TableCell>Products</TableCell>
+                                <TableCell>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {carts.map((cart, cartIndex) => (
+                            {cartList.map((cart) => (
                                 <Fragment key={cart.id}>
                                     <TableRow
                                         key={cart.id}
@@ -110,6 +120,11 @@ const CartList: React.FC = () => {
                                                 )}
                                             </Button>
                                         </TableCell>
+                                        <TableCell>
+                                            <Button variant="outlined" onClick={() => handleDelete(cart.id)}>
+                                                Delete
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                     {expandedCartId === cart.id && (
                                         <TableRow>
@@ -124,7 +139,7 @@ const CartList: React.FC = () => {
                                                         </TableRow>
                                                     </TableHead>
                                                     <TableBody>
-                                                        {cart.products.map((product, productIndex) => (
+                                                        {cart.products.map((product) => (
                                                             <TableRow key={product.productId}>
                                                                 <TableCell sx={{ width: '300px' }}>
                                                                     <ProductName productId={product.productId} />
@@ -154,7 +169,7 @@ const CartList: React.FC = () => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 20]}
                     component="div"
-                    count={carts.length}
+                    count={cartList.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handleChangePage}

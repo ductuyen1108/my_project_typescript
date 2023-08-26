@@ -1,31 +1,27 @@
-import { createSlice, createAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAction, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
 export interface CartItem {
     cartId: number;
 }
 
+export interface CartProduct {
+    productId: number;
+    quantity: number;
+}
+
 export interface UpdatedCartItem {
-    cartId: number;
+    id: number;
     userId: number;
     date: string;
-    products: {
-        productId: number;
-        quantity: number;
-    };
+    products: CartProduct[];
 }
 
 interface CartState {
-    items: CartItem[];
+    items: UpdatedCartItem[];
 }
 
-export const fetchUserCart = createAsyncThunk('cart/fetchUserCart', async (userId: number) => {
-    const response = await fetch(`https://fakestoreapi.com/carts/user/${userId}`);
-    const data = await response.json();
-    return data;
-});
-
-export const fetchCart = createAsyncThunk('cart/fetchCart', async (cartId: number) => {
-    const response = await fetch(`https://fakestoreapi.com/carts/${cartId}`);
+export const fetchCart = createAsyncThunk('cart/fetchCart', async () => {
+    const response = await fetch('https://fakestoreapi.com/carts');
     const data = await response.json();
     return data;
 });
@@ -38,10 +34,7 @@ export const addToCart = createAsyncThunk('cart/addToCart', async (newCartItem: 
         body: JSON.stringify({
             userId: newCartItem.userId,
             date: newCartItem.date,
-            products: {
-                productId: newCartItem.products.productId,
-                quantity: newCartItem.products.quantity,
-            },
+            products: newCartItem.products,
         }),
     });
     const data = await response.json();
@@ -49,14 +42,14 @@ export const addToCart = createAsyncThunk('cart/addToCart', async (newCartItem: 
 });
 
 export const updateCart = createAsyncThunk('cart/updateCart', async (updatedCartItem: UpdatedCartItem) => {
-    const response = await fetch(`https://fakestoreapi.com/carts/${updatedCartItem.cartId}`, {
+    const response = await fetch(`https://fakestoreapi.com/carts/${updatedCartItem.id}`, {
         method: 'PATCH',
         body: JSON.stringify({
             userId: updatedCartItem.userId,
             date: updatedCartItem.date,
             products: {
-                productId: updatedCartItem.products.productId,
-                quantity: updatedCartItem.products.quantity,
+                productId: updatedCartItem.products,
+                quantity: updatedCartItem.products,
             },
         }),
     });
@@ -82,22 +75,22 @@ const cartReducer = createSlice({
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(fetchUserCart.fulfilled, (state, action) => {
+            .addCase(fetchCart.fulfilled, (state, action: PayloadAction<UpdatedCartItem[]>) => {
                 state.items = action.payload;
             })
             .addCase(clearUserCart, (state) => {
                 state.items = [];
             })
-            .addCase(addToCart.fulfilled, (state, action) => {
+            .addCase(addToCart.fulfilled, (state, action: PayloadAction<UpdatedCartItem>) => {
+                state.items.push(action.payload);
+            })
+            .addCase(updateCart.fulfilled, (state, action: PayloadAction<UpdatedCartItem[]>) => {
                 state.items = action.payload;
             })
-            .addCase(updateCart.fulfilled, (state, action) => {
-                state.items = action.payload;
-            })
-            .addCase(deleteCartItem.fulfilled, (state, action) => {
+            .addCase(deleteCartItem.fulfilled, (state, action: PayloadAction<{ id: number }>) => {
                 if (Array.isArray(state.items)) {
                     const deletedCartId = action.payload.id;
-                    state.items = state.items.filter((cartItem) => cartItem.cartId !== deletedCartId);
+                    state.items = state.items.filter((cartItem) => cartItem.id !== deletedCartId);
                 } else {
                     console.error('state.items is not an array');
                 }

@@ -5,7 +5,7 @@ import { Avatar, Box, Button, Checkbox, FormControlLabel, Grid, Paper, TextField
 import { Lock } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '../../redux/store';
-import { useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { errorLogin } from '../../redux/selectors';
 
 const Login: React.FC = () => {
@@ -77,11 +77,22 @@ const Login: React.FC = () => {
                             }}
                         >
                             <FormControlLabel control={<Checkbox defaultChecked />} label="Remember me" />
-                            <Typography>Forgot password?</Typography>
                         </Box>
                         <Button variant="contained" fullWidth type="submit">
                             Log in
                         </Button>
+                        <Grid container py={'15px'}>
+                            <Grid item xs>
+                                <NavLink to="#" color="blue">
+                                    Forgot password?
+                                </NavLink>
+                            </Grid>
+                            <Grid item>
+                                <NavLink to="/signup">
+                                    <Typography color="blue">Don't have an account? Sign Up</Typography>
+                                </NavLink>
+                            </Grid>
+                        </Grid>
                         {error && <Box sx={{ backgroundColor: 'red', px: [4], py: [2], color: 'white' }}>{error}</Box>}
                     </form>
                 </Paper>

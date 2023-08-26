@@ -45,16 +45,18 @@ const ProductDetail: React.FC = () => {
         if (userToken) {
             const decodedUser = jwt_decode<DecodeUser>(userToken);
             const newCartItem: UpdatedCartItem = {
-                cartId: id,
+                id: id,
                 userId: decodedUser.sub,
                 date: new Date().toISOString(),
-                products: {
-                    productId: productId,
-                    quantity: 1,
-                },
+                products: [
+                    {
+                        productId: productId,
+                        quantity: 1,
+                    },
+                ],
             };
             dispatch(addToCart(newCartItem));
-            history('/dashboard/cartlist');
+            history('/cart');
         } else {
             history('/login');
         }

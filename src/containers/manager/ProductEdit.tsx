@@ -45,6 +45,8 @@ const ProductEdit: React.FC = () => {
             });
     }, [id]);
 
+    console.log(useEffect);
+
     const handleOnChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData({
@@ -58,7 +60,7 @@ const ProductEdit: React.FC = () => {
         try {
             await dispatch(
                 updateProduct({
-                    productId: formData.id,
+                    id: formData.id,
                     title: formData.title,
                     price: formData.price,
                     description: formData.description,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
     Box,
     Button,
@@ -21,26 +21,17 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NavLink } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '../../redux/store';
 import { daleteProductItem } from '../../slice/productSlice';
-
-interface Product {
-    id: number;
-    title: string;
-    image: string;
-    rating: {
-        rate: number;
-        count: number;
-    };
-    category: string;
-    price: number;
-}
+import { selectProducts } from '../../redux/selectors';
 
 const ProductList: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>([]);
     const [open, setOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
+
+    const productlist = useSelector(selectProducts);
+    console.log(productlist);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -57,20 +48,10 @@ const ProductList: React.FC = () => {
         setPage(0);
     };
 
-    useEffect(() => {
-        fetch('https://fakestoreapi.com/products')
-            .then((res) => res.json())
-            .then((data: Product[]) => {
-                setProducts(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, []);
-
-    const handleClickOpen = (product: Product) => {
+    const handleClickOpen = (id: number) => {
         setOpen(true);
-        setSelectedId(product.id);
+        console.log(id);
+        setSelectedId(id);
     };
 
     const handleClose = () => {
@@ -78,7 +59,7 @@ const ProductList: React.FC = () => {
     };
 
     const handleConfirmDelete = async () => {
-        if (selectedId !== null) {
+        if (selectedId !== null && typeof selectedId === 'number') {
             try {
                 await dispatch(daleteProductItem(selectedId));
                 setOpen(false);
@@ -126,7 +107,7 @@ const ProductList: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {products.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
+                            {productlist.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
                                 <TableRow
                                     key={product.id}
                                     sx={{
@@ -148,7 +129,7 @@ const ProductList: React.FC = () => {
                                     <TableCell>
                                         <img className="w-[20px] h-[20px]" src={product.image} alt="" />
                                     </TableCell>
-                                    <TableCell>{product.rating.rate}</TableCell>
+                                    <TableCell>{product.rating?.rate}</TableCell>
                                     <TableCell>{product.category}</TableCell>
                                     <TableCell>$ {product.price}</TableCell>
                                     <TableCell>
@@ -157,7 +138,11 @@ const ProductList: React.FC = () => {
                                                 <EditIcon />
                                             </Button>
                                         </NavLink>
-                                        <Button variant="text" color="warning" onClick={() => handleClickOpen(product)}>
+                                        <Button
+                                            variant="text"
+                                            color="warning"
+                                            onClick={() => product.id !== undefined && handleClickOpen(product.id)}
+                                        >
                                             <DeleteIcon />
                                         </Button>
                                         <Dialog
@@ -205,7 +190,7 @@ const ProductList: React.FC = () => {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 20]}
                         component="div"
-                        count={products.length}
+                        count={productlist.length}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onPageChange={handleChangePage}

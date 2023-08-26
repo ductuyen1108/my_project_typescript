@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 interface ProductItem {
-    productId: number;
+    id?: number;
     title: string;
     price: number;
     description: string;
@@ -33,7 +33,7 @@ export const addNewProduct = createAsyncThunk('product/AddNewProduct', async (ne
 });
 
 export const updateProduct = createAsyncThunk('product/updateProduct', async (updateProductItem: ProductItem) => {
-    const respone = await fetch(`https://fakestoreapi.com/products/${updateProductItem.productId}`, {
+    const respone = await fetch(`https://fakestoreapi.com/products/${updateProductItem.id}`, {
         method: 'PUT',
         body: JSON.stringify({
             title: updateProductItem.title,
@@ -55,6 +55,12 @@ export const daleteProductItem = createAsyncThunk('product/deleteProductItem', a
     return data;
 });
 
+export const fetchInitialProduct = createAsyncThunk('product/fetchInitialProduct', async () => {
+    const response = await fetch('https://fakestoreapi.com/products');
+    const data = await response.json();
+    return data;
+});
+
 const initialState: ProductState = {
     items: [],
 };
@@ -66,18 +72,26 @@ const productReducer = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(addNewProduct.fulfilled, (state, action) => {
-                state.items = action.payload;
+                state.items.push(action.payload);
             })
             .addCase(updateProduct.fulfilled, (state, action) => {
-                state.items = action.payload;
+                const updatedProduct = action.payload;
+                const productIndex = state.items.findIndex((product) => product.id === updatedProduct.id);
+
+                if (productIndex !== -1) {
+                    state.items[productIndex] = updatedProduct;
+                }
             })
             .addCase(daleteProductItem.fulfilled, (state, action) => {
                 if (Array.isArray(state.items)) {
-                    const deletedProductId = action.payload.productId;
-                    state.items = state.items.filter((productItem) => productItem.productId !== deletedProductId);
+                    const deletedProductId = action.payload.id;
+                    state.items = state.items.filter((productItem) => productItem.id !== deletedProductId);
                 } else {
                     console.error('state.items is not an array');
                 }
+            })
+            .addCase(fetchInitialProduct.fulfilled, (state, action) => {
+                state.items = action.payload;
             });
     },
 });

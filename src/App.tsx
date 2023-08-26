@@ -12,6 +12,7 @@ import {
     ProductList,
     Public,
     Shop,
+    Signup,
     TodoList,
     User,
     UserCart,
@@ -25,6 +26,7 @@ function App() {
                 <Route path={path.PUBLIC} element={<Public />}>
                     <Route path={path.HOME} element={<Home />} />
                     <Route path={path.LOGIN} element={<Login />} />
+                    <Route path={path.SIGUP} element={<Signup />} />
                     <Route path={path.TODO_LIST} element={<TodoList />} />
                     <Route path={path.SHOP} element={<Shop />} />
                     <Route path={path.USER} element={<User />} />

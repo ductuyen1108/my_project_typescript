@@ -1,6 +1,9 @@
 import React, { ChangeEvent, FormEvent, useState } from 'react';
 import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../redux/store';
+import { addNewProduct } from '../../slice/productSlice';
 
 interface Product {
     title: string;
@@ -19,6 +22,9 @@ const AddProduct: React.FC = () => {
         category: '',
     });
 
+    const useAppDispatch = () => useDispatch<AppDispatch>();
+    const dispatch = useAppDispatch();
+
     const history = useNavigate();
 
     const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -29,15 +35,14 @@ const AddProduct: React.FC = () => {
         });
     };
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        fetch('https://fakestoreapi.com/products', {
-            method: 'POST',
-            body: JSON.stringify(formData),
-        })
-            .then((res) => res.json())
-            .then((json) => console.log(json));
-        history('/productlist');
+        try {
+            await dispatch(addNewProduct(formData));
+            history('/dashboard/productlist');
+        } catch (error) {
+            console.log(error);
+        }
     };
 
     return (

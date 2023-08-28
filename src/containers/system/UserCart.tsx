@@ -17,38 +17,35 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
-import jwt_decode from 'jwt-decode';
 import { Fragment, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectToken } from '../../redux/selectors';
 import { ImageProduct, PriceProduct, ProductName, NameUser } from '../../components';
-import { UpdatedCartItem, updateCart } from '../../slice/cartSlice';
-import type { AppDispatch } from '../../redux/store';
-
-interface Cart {
-    id: number;
-    userId: number;
-    date: string;
-    products: Array<{ productId: number; quantity: number }>;
-}
-
-export interface DecodeUser {
-    sub: number;
-    user: string;
-}
+import { getUserLoggedIn } from '../../apis/users.api';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getCartByUserId, updateCartItem } from '../../apis/carts.api';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Cart } from '../../types/carts.type';
 
 const UserCart: React.FC = () => {
     const [carts, setCarts] = useState<Cart[]>([]);
     const [expandedCartId, setExpandedCartId] = useState<number | null>(null);
     const [quantityUpdated, setQuantityUpdated] = useState<number | null>(null);
     const [idProductEdit, setIdProductEdit] = useState<number | null>(null);
+    const [idCartSelect, setIdCartSelect] = useState<number | null>(null);
 
     console.log(quantityUpdated);
 
-    const userToken = useSelector(selectToken);
+    const loggedInfo = getUserLoggedIn();
+    const userId = loggedInfo?.userId;
 
-    const useAppDispatch = () => useDispatch<AppDispatch>();
-    const dispatch = useAppDispatch();
+    const { data } = useQuery(['userData', userId], () => getCartByUserId(userId || 0));
+
+    const updateCartItemMutation = useMutation({
+        mutationFn: () => updateCartItem(idCartSelect, Number(userId), idProductEdit, quantityUpdated),
+        onSuccess: () => {
+            toast.success('Updated quantity successfully');
+        },
+    });
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -64,18 +61,10 @@ const UserCart: React.FC = () => {
     };
 
     useEffect(() => {
-        let decodedUser: DecodeUser | undefined;
-        if (userToken) {
-            decodedUser = jwt_decode<DecodeUser>(userToken);
-            const userId = decodedUser.sub;
-            fetch(`https://fakestoreapi.com/carts/user/${userId}`)
-                .then((res) => res.json())
-                .then((data) => setCarts(data))
-                .catch((err) => {
-                    console.log(err);
-                });
+        if (data?.data) {
+            setCarts(data?.data);
         }
-    }, [userToken]);
+    }, [data]);
 
     const toggleExpand = (cartId: number) => {
         setExpandedCartId((prev) => (prev === cartId ? null : cartId));
@@ -88,19 +77,8 @@ const UserCart: React.FC = () => {
         setQuantityUpdated(newQuantity);
     };
 
-    const handleUpdateCart = (productId: number, quantity: number, cartId: number, userId: number) => {
-        const updatedCartItem: UpdatedCartItem = {
-            id: cartId,
-            userId: userId,
-            date: new Date().toISOString(),
-            products: [
-                {
-                    productId: productId,
-                    quantity: quantity,
-                },
-            ],
-        };
-        dispatch(updateCart(updatedCartItem));
+    const handleUpdateCart = () => {
+        updateCartItemMutation.mutate();
         setShowUpdateBtn(false);
     };
 
@@ -127,6 +105,7 @@ const UserCart: React.FC = () => {
                 <Box sx={{ display: 'flex', flexDirection: 'column', py: '20px', fontWeight: '600', fontSize: '25px' }}>
                     <Typography variant="h2">Cart</Typography>
                 </Box>
+                <ToastContainer />
                 <Box
                     sx={{
                         position: 'relative',
@@ -204,6 +183,7 @@ const UserCart: React.FC = () => {
                                                                                 sx={{ cursor: 'pointer' }}
                                                                                 onClick={() => {
                                                                                     setIdProductEdit(product.productId);
+                                                                                    setIdCartSelect(cart.id);
                                                                                     setShowUpdateBtn(true);
                                                                                     const newQuantity = Math.max(
                                                                                         0,
@@ -224,6 +204,7 @@ const UserCart: React.FC = () => {
                                                                                 sx={{ cursor: 'pointer' }}
                                                                                 onClick={() => {
                                                                                     setIdProductEdit(product.productId);
+                                                                                    setIdCartSelect(cart.id);
                                                                                     setShowUpdateBtn(true);
                                                                                     const newQuantity =
                                                                                         product.quantity + 1;
@@ -247,20 +228,7 @@ const UserCart: React.FC = () => {
                                                                             idProductEdit === product.productId && (
                                                                                 <Button
                                                                                     variant="text"
-                                                                                    onClick={() => {
-                                                                                        const productId =
-                                                                                            product.productId;
-                                                                                        const quantity =
-                                                                                            product.quantity;
-                                                                                        const cartId = cart.id;
-                                                                                        const userId = cart.userId;
-                                                                                        handleUpdateCart(
-                                                                                            productId,
-                                                                                            quantity,
-                                                                                            cartId,
-                                                                                            userId,
-                                                                                        );
-                                                                                    }}
+                                                                                    onClick={handleUpdateCart}
                                                                                 >
                                                                                     Update
                                                                                 </Button>

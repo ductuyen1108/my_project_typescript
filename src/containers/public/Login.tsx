@@ -1,23 +1,29 @@
 import { useState } from 'react';
 import React from 'react';
-import { loginUser } from '../../slice/authSlice';
 import { Avatar, Box, Button, Checkbox, FormControlLabel, Grid, Paper, TextField, Typography } from '@mui/material';
 import { Lock } from '@mui/icons-material';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../../redux/store';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { errorLogin } from '../../redux/selectors';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { login } from '../../apis/auth.api';
+import { Auth } from '../../types/auth.type';
+import jwtDecode from 'jwt-decode';
 
 const Login: React.FC = () => {
     const [username, setUsername] = useState<string>('');
     const [password, setPassword] = useState<string>('');
 
-    const useAppDispatch = () => useDispatch<AppDispatch>();
-    const dispatch = useAppDispatch();
-
     const history = useNavigate();
 
-    const error = useSelector(errorLogin);
+    const queryClient = useQueryClient();
+
+    const loginMutation = useMutation((credentials: Auth) => login(credentials.username, credentials.password), {
+        onSuccess: (data) => {
+            localStorage.setItem('token', data);
+            queryClient.invalidateQueries(['userData']);
+            const decodeToken = jwtDecode(data);
+            console.log(decodeToken);
+        },
+    });
 
     const handleLogin = (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,7 +31,7 @@ const Login: React.FC = () => {
             username,
             password,
         };
-        dispatch(loginUser(credentials));
+        loginMutation.mutate(credentials);
         history('/');
     };
 
@@ -93,7 +99,6 @@ const Login: React.FC = () => {
                                 </NavLink>
                             </Grid>
                         </Grid>
-                        {error && <Box sx={{ backgroundColor: 'red', px: [4], py: [2], color: 'white' }}>{error}</Box>}
                     </form>
                 </Paper>
             </Grid>

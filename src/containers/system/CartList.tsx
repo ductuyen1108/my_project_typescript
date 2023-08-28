@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -15,33 +15,34 @@ import {
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { ImageProduct, NameUser, PriceProduct, ProductName } from '../../components';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectCarts } from '../../redux/selectors';
-import { AppDispatch } from '../../redux/store';
-import { CartItem, deleteCartItem } from '../../slice/cartSlice';
-
-/* interface Cart {
-    id: number;
-    userId: number;
-    date: string;
-    products: [
-        {
-            productId: number;
-            quantity: number;
-        },
-    ];
-} */
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { deleteCartItem, getAllCarts } from '../../apis/carts.api';
+import { ToastContainer, toast } from 'react-toastify';
+import { Cart } from '../../types/carts.type';
 
 const CartList: React.FC = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [expandedCartId, setExpandedCartId] = useState<number | null>(null);
+    const [cartList, setCartList] = useState<Cart[]>([]);
 
-    const cartList = useSelector(selectCarts);
-    console.log(cartList);
+    const { data } = useQuery({
+        queryKey: ['carts'],
+        queryFn: getAllCarts,
+    });
 
-    const useAppDispatch = () => useDispatch<AppDispatch>();
-    const dispatch = useAppDispatch();
+    useEffect(() => {
+        if (data?.data) {
+            setCartList(data?.data);
+        }
+    }, [data]);
+
+    const deleteCartMutation = useMutation({
+        mutationFn: (id: number) => deleteCartItem(id),
+        onSuccess: (_) => {
+            toast.success('Delete cart successfully');
+        },
+    });
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
@@ -57,15 +58,9 @@ const CartList: React.FC = () => {
     };
 
     const handleDelete = async (id: number) => {
-        try {
-            const cartId: CartItem = {
-                cartId: id,
-            };
-            dispatch(deleteCartItem(cartId));
-        } catch (error) {
-            console.log(error);
-        }
-        console.log('cartID', id);
+        deleteCartMutation.mutate(id);
+        const updatedCartList = cartList.filter((cart) => cart.id !== id);
+        setCartList(updatedCartList);
     };
 
     return (
@@ -73,6 +68,7 @@ const CartList: React.FC = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', py: '20px', fontWeight: '600', fontSize: '25px' }}>
                 <Typography variant="h2">Cart</Typography>
             </Box>
+            <ToastContainer />
             <Box
                 sx={{
                     position: 'relative',
@@ -134,7 +130,7 @@ const CartList: React.FC = () => {
                                                         <TableRow>
                                                             <TableCell>Product name</TableCell>
                                                             <TableCell>Image</TableCell>
-                                                            <TableCell sx={{ paddingLeft: '42px' }}>Quantity</TableCell>
+                                                            <TableCell>Quantity</TableCell>
                                                             <TableCell>Total</TableCell>
                                                         </TableRow>
                                                     </TableHead>

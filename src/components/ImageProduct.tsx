@@ -1,28 +1,18 @@
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import { useEffect, useState } from 'react';
+import { getProductById } from '../apis/products.api';
 
 interface Props {
     productId: number;
 }
 
-interface Product {
-    image: string;
-}
-
 const ImageProduct: React.FC<Props> = ({ productId }) => {
-    const [product, setproduct] = useState<Product | null>(null);
+    const { data } = useQuery({
+        queryKey: ['product'],
+        queryFn: () => getProductById(productId),
+    });
 
-    useEffect(() => {
-        fetch(`https://fakestoreapi.com/products/${productId}`)
-            .then((res) => res.json())
-            .then((data: Product) => {
-                setproduct(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [productId]);
-    return <img src={product?.image} alt="" style={{ width: '35px', height: '40px' }} />;
+    return <img src={data?.data.image} alt="" style={{ width: '35px', height: '40px' }} />;
 };
 
 export default ImageProduct;

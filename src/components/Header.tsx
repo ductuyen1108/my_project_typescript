@@ -12,34 +12,21 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
-import jwt_decode from 'jwt-decode';
 
 import { useState } from 'react';
 import { menuHeader, settings } from '../utils/menu';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { selectToken } from '../redux/selectors';
-import { logoutUser } from '../slice/authSlice';
-
-interface DecodeUser {
-    sub: number;
-    user: string;
-}
+import { getUserLoggedIn } from '../apis/users.api';
 
 const Header: React.FC = () => {
     const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
-    const dispatch = useDispatch();
     const history = useNavigate();
 
-    const userToken = useSelector(selectToken);
-    console.log(userToken);
-
-    let decodedUser: DecodeUser | undefined;
-    if (userToken) {
-        decodedUser = jwt_decode<DecodeUser>(userToken);
-    }
+    const loggedInfo = getUserLoggedIn();
+    const username = loggedInfo?.username;
+    console.log(username);
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         if (event.currentTarget) {
@@ -61,7 +48,7 @@ const Header: React.FC = () => {
     };
 
     const handleLogOut = () => {
-        dispatch(logoutUser());
+        localStorage.removeItem('token');
         history('/login');
     };
 
@@ -156,10 +143,10 @@ const Header: React.FC = () => {
                             </NavLink>
                         ))}
                     </Box>
-                    {decodedUser ? (
+                    {username ? (
                         <>
-                            <Typography sx={{ marginRight: '15px', fontWeight: '100' }}>
-                                Hello {decodedUser.user}!
+                            <Typography sx={{ marginRight: '15px', fontWeight: '100', textTransform: 'capitalize' }}>
+                                Hello {username}!
                             </Typography>
                             <Box sx={{ flexGrow: 0 }}>
                                 <Tooltip title="Open settings">

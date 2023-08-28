@@ -1,35 +1,21 @@
 import React from 'react';
 import { Typography } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { getUserById } from '../apis/users.api';
 
 interface Props {
     userId: number;
 }
 
-interface User {
-    name: {
-        firstname: string;
-        lastname: string;
-    };
-}
-
 const NameUser: React.FC<Props> = ({ userId }) => {
-    const [user, setUser] = useState<User | null>(null);
-
-    useEffect(() => {
-        fetch(`https://fakestoreapi.com/users/${userId}`)
-            .then((res) => res.json())
-            .then((data: User) => {
-                setUser(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [userId]);
+    const { data } = useQuery({
+        queryKey: ['user'],
+        queryFn: () => getUserById(userId),
+    });
 
     return (
         <Typography sx={{ textTransform: 'capitalize' }}>
-            {user?.name.firstname} {user?.name.lastname}
+            {data?.data.name.firstname} {data?.data.name.lastname}
         </Typography>
     );
 };

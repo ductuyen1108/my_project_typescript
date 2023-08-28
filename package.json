@@ -11,6 +11,8 @@
         "@mui/material": "^5.14.5",
         "@mui/styled-engine-sc": "^5.12.0",
         "@reduxjs/toolkit": "^1.9.5",
+        "@tanstack/react-query": "^4.33.0",
+        "@tanstack/react-query-devtools": "^4.33.0",
         "@testing-library/jest-dom": "^5.17.0",
         "@testing-library/react": "^13.4.0",
         "@testing-library/user-event": "^13.5.0",
@@ -61,6 +63,7 @@
     },
     "devDependencies": {
         "@types/react-test-renderer": "^18.0.0",
-        "cypress": "^12.17.4"
+        "cypress": "^12.17.4",
+        "react-toastify": "^9.1.3"
     }
 }

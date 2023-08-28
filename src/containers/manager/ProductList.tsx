@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -21,23 +21,37 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NavLink } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import type { AppDispatch } from '../../redux/store';
-import { daleteProductItem } from '../../slice/productSlice';
-import { selectProducts } from '../../redux/selectors';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { deleteProduct, getAllProducts } from '../../apis/products.api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { Products } from '../../types/products.type';
 
 const ProductList: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [products, setProducts] = useState<Products>([]);
 
-    const productlist = useSelector(selectProducts);
-    console.log(productlist);
+    const { data } = useQuery({
+        queryKey: ['products'],
+        queryFn: getAllProducts,
+    });
+
+    useEffect(() => {
+        if (data?.data) {
+            setProducts(data?.data);
+        }
+    }, [data]);
+
+    const deleteProductMutation = useMutation({
+        mutationFn: (id: number) => deleteProduct(id),
+        onSuccess: (_, id) => {
+            toast.success('Delete product successfully');
+        },
+    });
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-
-    const useAppDispatch = () => useDispatch<AppDispatch>();
-    const dispatch = useAppDispatch();
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
@@ -50,7 +64,6 @@ const ProductList: React.FC = () => {
 
     const handleClickOpen = (id: number) => {
         setOpen(true);
-        console.log(id);
         setSelectedId(id);
     };
 
@@ -58,16 +71,11 @@ const ProductList: React.FC = () => {
         setOpen(false);
     };
 
-    const handleConfirmDelete = async () => {
-        if (selectedId !== null && typeof selectedId === 'number') {
-            try {
-                await dispatch(daleteProductItem(selectedId));
-                setOpen(false);
-                setSelectedId(null);
-            } catch (error) {
-                console.error('Error deleting product:', error);
-            }
-        }
+    const handleConfirmDelete = () => {
+        deleteProductMutation.mutate(selectedId as number);
+        const updateProductList = products.filter((product) => product.id !== selectedId);
+        setProducts(updateProductList);
+        setOpen(false);
     };
 
     return (
@@ -84,6 +92,7 @@ const ProductList: React.FC = () => {
             >
                 <Typography variant="h2">Product List</Typography>
             </Box>
+            <ToastContainer />
             <Box
                 sx={{
                     position: 'relative',
@@ -100,14 +109,13 @@ const ProductList: React.FC = () => {
                             <TableRow>
                                 <TableCell>Product name</TableCell>
                                 <TableCell>Image</TableCell>
-                                <TableCell>Rating</TableCell>
                                 <TableCell>Category</TableCell>
                                 <TableCell>Price</TableCell>
                                 <TableCell sx={{ px: '55px' }}>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {productlist.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
+                            {products.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((product) => (
                                 <TableRow
                                     key={product.id}
                                     sx={{
@@ -129,7 +137,6 @@ const ProductList: React.FC = () => {
                                     <TableCell>
                                         <img className="w-[20px] h-[20px]" src={product.image} alt="" />
                                     </TableCell>
-                                    <TableCell>{product.rating?.rate}</TableCell>
                                     <TableCell>{product.category}</TableCell>
                                     <TableCell>$ {product.price}</TableCell>
                                     <TableCell>
@@ -190,7 +197,7 @@ const ProductList: React.FC = () => {
                     <TablePagination
                         rowsPerPageOptions={[5, 10, 20]}
                         component="div"
-                        count={productlist.length}
+                        count={products.length}
                         rowsPerPage={rowsPerPage}
                         page={page}
                         onPageChange={handleChangePage}

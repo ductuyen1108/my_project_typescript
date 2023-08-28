@@ -2,46 +2,33 @@ import { Bookmark } from '@mui/icons-material';
 import { Box, Grid, Typography } from '@mui/material';
 import React from 'react';
 import { filterSelectedCategory } from '../redux/selectors';
-import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { getProducts, getProductsByCategory } from '../apis/products.api';
 
-interface ProductList {
-    id: number;
-    image: string;
-    title: string;
-    description: string;
-    category: string;
-    price: number;
-}
-
-interface Props {
-    currentLimit: number;
-}
-
-const Products: React.FC<Props> = ({ currentLimit }) => {
-    const [products, setproducts] = useState<ProductList[]>([]);
-
+const Products: React.FC = () => {
     const selectedCategory = useSelector(filterSelectedCategory);
+    console.log('Select', selectedCategory);
 
-    useEffect(() => {
-        const apiUrl = selectedCategory
-            ? `https://fakestoreapi.com/products/category/${selectedCategory}`
-            : `https://fakestoreapi.com/products?limit=${currentLimit}`;
+    const { data } = useQuery({
+        queryKey: ['products', selectedCategory],
+        queryFn: () => {
+            if (selectedCategory) {
+                return getProductsByCategory(selectedCategory);
+            } else {
+                return getProducts();
+            }
+        },
+        staleTime: 200 * 1000,
+        keepPreviousData: true,
+    });
 
-        fetch(apiUrl)
-            .then((res) => res.json())
-            .then((data: []) => {
-                setproducts(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [selectedCategory, currentLimit]);
+    console.log('array', data?.data);
 
     return (
         <Grid container spacing={2} padding="20px">
-            {products.map((product) => (
+            {data?.data.map((product) => (
                 <Grid key={product.id} item xs={12} sm={6} md={4}>
                     <Link
                         to={`/product/${product.id}`}

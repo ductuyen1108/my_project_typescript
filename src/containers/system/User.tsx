@@ -1,48 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import jwt_decode from 'jwt-decode';
+import React from 'react';
 import { Box, CircularProgress, Grid, Paper, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { selectToken } from '../../redux/selectors';
-
-interface UserData {
-    name: {
-        firstname: string;
-        lastname: string;
-    };
-    email: string;
-    phone: string;
-    address: {
-        city: string;
-        street: string;
-        number: string;
-        zipcode: string;
-    };
-}
-
-interface DecodeUser {
-    sub: number;
-    user: string;
-}
+import { getUserById, getUserLoggedIn } from '../../apis/users.api';
+import { useQuery } from '@tanstack/react-query';
 
 const User: React.FC = () => {
-    const [userData, setUserData] = useState<UserData | null>(null);
-    const userToken = useSelector(selectToken);
+    const loggedInfo = getUserLoggedIn();
+    const userId = loggedInfo?.userId;
 
-    useEffect(() => {
-        let decodedUser: DecodeUser | undefined;
-        if (userToken) {
-            decodedUser = jwt_decode<DecodeUser>(userToken);
-            const userId = decodedUser.sub;
-            fetch(`https://fakestoreapi.com/users/${userId}`)
-                .then((res) => res.json())
-                .then((data: UserData) => {
-                    setUserData(data);
-                })
-                .catch((error) => {
-                    console.error('Error fetching user data:', error);
-                });
-        }
-    }, [userToken]);
+    const { data: user } = useQuery(['userData', userId], () => getUserById(userId || 0));
 
     return (
         <Box
@@ -54,7 +19,7 @@ const User: React.FC = () => {
                 py: '35px',
             }}
         >
-            {userData ? (
+            {user ? (
                 <Paper
                     sx={{
                         display: 'flex',
@@ -95,7 +60,7 @@ const User: React.FC = () => {
                                         pr: '10px',
                                     }}
                                 >
-                                    {userData.name.firstname}
+                                    {user.data.name.firstname}
                                 </Typography>
                                 <Typography
                                     sx={{
@@ -104,7 +69,7 @@ const User: React.FC = () => {
                                         textTransform: 'capitalize',
                                     }}
                                 >
-                                    {userData.name.lastname}
+                                    {user.data.name.lastname}
                                 </Typography>
                             </Box>
                         </Box>
@@ -148,7 +113,7 @@ const User: React.FC = () => {
                                                 fontWeight: '400',
                                             }}
                                         >
-                                            {userData.email}
+                                            {user.data.email}
                                         </Typography>
                                     </Box>
                                     <Box className="">
@@ -167,7 +132,7 @@ const User: React.FC = () => {
                                                 fontWeight: '400',
                                             }}
                                         >
-                                            {userData.phone}
+                                            {user.data.phone}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -203,9 +168,10 @@ const User: React.FC = () => {
                                                 color: 'gray',
                                                 fontSize: '20px',
                                                 fontWeight: '400',
+                                                textTransform: 'capitalize',
                                             }}
                                         >
-                                            {userData.address.city}
+                                            {user.data.address.city}
                                         </Typography>
                                     </Box>
                                     <Box className="">
@@ -225,7 +191,7 @@ const User: React.FC = () => {
                                                 textTransform: 'capitalize',
                                             }}
                                         >
-                                            {userData.address.street}
+                                            {user.data.address.street}
                                         </Typography>
                                     </Box>
                                     <Box className="">
@@ -245,7 +211,7 @@ const User: React.FC = () => {
                                                 textTransform: 'capitalize',
                                             }}
                                         >
-                                            {userData.address.number}
+                                            {user.data.address.number}
                                         </Typography>
                                     </Box>
                                     <Box className="">
@@ -264,7 +230,7 @@ const User: React.FC = () => {
                                                 fontWeight: '400',
                                             }}
                                         >
-                                            {userData.address.zipcode}
+                                            {user.data.address.zipcode}
                                         </Typography>
                                     </Box>
                                 </Grid>

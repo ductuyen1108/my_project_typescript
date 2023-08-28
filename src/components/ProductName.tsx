@@ -1,29 +1,21 @@
 import { Typography } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
-import { useState, useEffect } from 'react';
+import { getProductById } from '../apis/products.api';
 
 interface Props {
     productId: number;
 }
 
-interface Product {
-    title: string;
-}
-
 const ProductName: React.FC<Props> = ({ productId }) => {
-    const [product, setProduct] = useState<Product | null>(null);
+    const { data } = useQuery({
+        queryKey: ['product'],
+        queryFn: () => getProductById(productId),
+    });
 
-    useEffect(() => {
-        fetch(`https://fakestoreapi.com/products/${productId}`)
-            .then((res) => res.json())
-            .then((data: Product) => [setProduct(data)])
-            .catch((error) => {
-                console.log(error);
-            });
-    }, [productId]);
     return (
         <Typography sx={{ overflow: 'hidden', width: '300px', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-            {product?.title}
+            {data?.data.title}
         </Typography>
     );
 };

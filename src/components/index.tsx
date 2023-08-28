@@ -6,4 +6,3 @@ export { default as PriceProduct } from './PriceProduct';
 export { default as ImageProduct } from './ImageProduct';
 export { default as ProductName } from './ProductName';
 export { default as NameUser } from './NameUser';
-export { default as Prices } from './Prices';

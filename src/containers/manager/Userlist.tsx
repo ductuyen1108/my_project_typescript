@@ -13,14 +13,19 @@ import {
     Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { selectFormattedUsers } from '../../redux/selectors';
+import { useQuery } from '@tanstack/react-query';
+import { getAllUsers } from '../../apis/users.api';
 
 const Userlist: React.FC = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    const userlist = useSelector(selectFormattedUsers);
+    const { data } = useQuery({
+        queryKey: ['users'],
+        queryFn: getAllUsers,
+    });
+
+    console.log(data?.data);
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
@@ -33,7 +38,7 @@ const Userlist: React.FC = () => {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {userlist ? (
+            {data?.data ? (
                 <>
                     <Box
                         sx={{
@@ -69,7 +74,7 @@ const Userlist: React.FC = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {userlist
+                                    {data?.data
                                         .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                                         .map((user) => (
                                             <TableRow
@@ -108,7 +113,7 @@ const Userlist: React.FC = () => {
                             <TablePagination
                                 rowsPerPageOptions={[5, 10, 20]}
                                 component="div"
-                                count={userlist.length}
+                                count={data?.data.length}
                                 rowsPerPage={rowsPerPage}
                                 page={page}
                                 onPageChange={handleChangePage}

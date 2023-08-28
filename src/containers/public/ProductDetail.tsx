@@ -1,62 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Avatar, Box, Button, CircularProgress, Grid, IconButton, Rating, Typography } from '@mui/material';
 import { AddShoppingCart, Favorite } from '@mui/icons-material';
-import type { AppDispatch } from '../../redux/store';
-import { selectToken } from '../../redux/selectors';
-import { UpdatedCartItem, addToCart } from '../../slice/cartSlice';
-import { DecodeUser } from '../system/UserCart';
-import jwt_decode from 'jwt-decode';
-
-interface Product {
-    id: number;
-    title: string;
-    description: string;
-    image: string;
-    category: string;
-    rating: {
-        rate: number;
-    };
-    price: number;
-}
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getProductById } from '../../apis/products.api';
+import { getUserLoggedIn } from '../../apis/users.api';
+import { addToCart } from '../../apis/carts.api';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProductDetail: React.FC = () => {
-    const [product, setProduct] = useState<Product | null>(null);
     const { id } = useParams<{ id: any }>();
-
-    const userToken = useSelector(selectToken);
     const history = useNavigate();
-    const useAppDispatch = () => useDispatch<AppDispatch>();
-    const dispatch = useAppDispatch();
 
-    useEffect(() => {
-        fetch(`https://fakestoreapi.com/products/${id}`)
-            .then((res) => res.json())
-            .then((data: Product) => {
-                setProduct(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [id]);
+    const loggedInfo = getUserLoggedIn();
+    const userId = loggedInfo?.userId;
 
-    const handleAddToCart = (productId: number) => {
-        if (userToken) {
-            const decodedUser = jwt_decode<DecodeUser>(userToken);
-            const newCartItem: UpdatedCartItem = {
-                id: id,
-                userId: decodedUser.sub,
-                date: new Date().toISOString(),
-                products: [
-                    {
-                        productId: productId,
-                        quantity: 1,
-                    },
-                ],
-            };
-            dispatch(addToCart(newCartItem));
-            history('/cart');
+    const { data } = useQuery({
+        queryKey: ['product'],
+        queryFn: () => getProductById(Number(id)),
+    });
+    const product = data?.data;
+
+    const addToCartMutation = useMutation({
+        mutationFn: () => addToCart(Number(userId), id, 1),
+        onSuccess: () => {
+            toast.success('Add to cart successfully');
+        },
+    });
+
+    const handleAddToCart = () => {
+        if (userId) {
+            addToCartMutation.mutate();
         } else {
             history('/login');
         }
@@ -72,6 +47,7 @@ const ProductDetail: React.FC = () => {
 
     return (
         <Box className="text-gray-700 body-font overflow-hidden bg-white">
+            <ToastContainer />
             <Grid container spacing={4} className="p-20">
                 <Grid item md={6}>
                     <Box
@@ -124,7 +100,7 @@ const ProductDetail: React.FC = () => {
                                 variant="contained"
                                 color="secondary"
                                 sx={{ ml: 2 }}
-                                onClick={() => handleAddToCart(product.id)}
+                                onClick={handleAddToCart}
                                 startIcon={<AddShoppingCart />}
                             >
                                 Add to Cart

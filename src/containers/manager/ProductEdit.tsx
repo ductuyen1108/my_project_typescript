@@ -1,78 +1,55 @@
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Button, Paper, TextField, Typography } from '@mui/material';
-import { useDispatch } from 'react-redux';
-import { updateProduct } from '../../slice/productSlice';
-import type { AppDispatch } from '../../redux/store';
-
-interface Product {
-    id: number;
-    title: string;
-    price: number;
-    description: string;
-    category: string;
-    image: string;
-    rating?: {
-        rate: number;
-        count: number;
-    };
-}
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { getProductById, updateProduct } from '../../apis/products.api';
+import { FormStateType, initialFormState } from './AddProduct';
+import { Product } from '../../types/products.type';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProductEdit: React.FC = () => {
+    const [formState, setFormState] = useState<FormStateType>(initialFormState);
+
     const { id } = useParams<{ id: string }>();
     const history = useNavigate();
+    const queryClient = useQueryClient();
 
-    const [formData, setFormData] = useState<Product>({
-        id: 0,
-        title: '',
-        price: 0,
-        description: '',
-        image: '',
-        category: '',
+    const updateProductMutation = useMutation({
+        mutationFn: (_) => updateProduct(id as string, formState as Product),
+        onSuccess: (data) => {
+            queryClient.setQueryData(['product', id], data);
+        },
     });
 
-    const useAppDispatch = () => useDispatch<AppDispatch>();
-    const dispatch = useAppDispatch();
+    const productQuery = useQuery({
+        queryKey: ['product', id],
+        queryFn: () => getProductById(Number(id)),
+        enabled: id !== undefined,
+        staleTime: 1000 * 10,
+    });
 
     useEffect(() => {
-        fetch(`https://fakestoreapi.com/products/${id}`)
-            .then((res) => res.json())
-            .then((data: Product) => {
-                setFormData(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, [id]);
-
-    console.log(useEffect);
+        if (productQuery.data) {
+            setFormState(productQuery.data.data);
+        }
+    }, [productQuery.data]);
 
     const handleOnChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
+        setFormState({
+            ...formState,
             [name]: value,
         });
     };
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent<HTMLElement>) => {
         e.preventDefault();
-        try {
-            await dispatch(
-                updateProduct({
-                    id: formData.id,
-                    title: formData.title,
-                    price: formData.price,
-                    description: formData.description,
-                    image: formData.image,
-                    category: formData.category,
-                }),
-            );
-
-            history('/dashboard/productlist');
-        } catch (error) {
-            console.error('Error updating product:', error);
-        }
+        updateProductMutation.mutate(undefined, {
+            onSuccess: (_) => {
+                toast.success('Updated successfully');
+            },
+        });
     };
 
     return (
@@ -89,12 +66,13 @@ const ProductEdit: React.FC = () => {
                 <Typography variant="h2" sx={{ py: [3], textAlign: 'center', fontWeight: '600', fontSize: '30px' }}>
                     Product Edit
                 </Typography>
+                <ToastContainer />
                 <form onSubmit={handleSubmit} className="w-[900px]">
                     <TextField
                         label="Title"
                         name="title"
                         id="fullWidth"
-                        value={formData.title}
+                        value={formState.title}
                         onChange={handleOnChange}
                         fullWidth
                         sx={{ mb: [6] }}
@@ -104,14 +82,14 @@ const ProductEdit: React.FC = () => {
                         id="fullWidth"
                         fullWidth
                         name="description"
-                        value={formData.description}
+                        value={formState.description}
                         onChange={handleOnChange}
                         sx={{ mb: [6] }}
                     />
                     <TextField
                         label="Category"
                         name="category"
-                        value={formData.category}
+                        value={formState.category}
                         onChange={handleOnChange}
                         fullWidth
                         sx={{ mb: [6] }}
@@ -120,7 +98,7 @@ const ProductEdit: React.FC = () => {
                         label="Price"
                         type="number"
                         name="price"
-                        value={formData.price}
+                        value={formState.price}
                         onChange={handleOnChange}
                         fullWidth
                         sx={{ mb: [6] }}
@@ -128,7 +106,7 @@ const ProductEdit: React.FC = () => {
                     <TextField
                         label="Image"
                         name="image"
-                        value={formData.image}
+                        value={formState.image}
                         onChange={handleOnChange}
                         fullWidth
                         sx={{ mb: [6] }}

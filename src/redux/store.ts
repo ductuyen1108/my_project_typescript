@@ -1,13 +1,15 @@
 import { configureStore } from '@reduxjs/toolkit';
 import filtersReducer from '../slice/filtersSlice';
 import authSlice from '../slice/authSlice';
-import cartSlice, { fetchCart } from '../slice/cartSlice';
-import productSlice, { fetchInitialProduct } from '../slice/productSlice';
-import signUpSlice, { fetchInitialUsers } from '../slice/signUpSlice';
+import cartSlice from '../slice/cartSlice';
+import productSlice from '../slice/productSlice';
+import signUpSlice from '../slice/signUpSlice';
 import userCartSlice from '../slice/userCartSlice';
+import todoListSlice from '../slice/todoListSlice';
 
 const store = configureStore({
     reducer: {
+        todolist: todoListSlice,
         filters: filtersReducer,
         auth: authSlice,
         cart: cartSlice,
@@ -16,10 +18,6 @@ const store = configureStore({
         usercart: userCartSlice,
     },
 });
-
-store.dispatch(fetchInitialUsers());
-store.dispatch(fetchInitialProduct());
-store.dispatch(fetchCart());
 
 export default store;
 

@@ -20,5 +20,8 @@ export const selectProducts = (state: RootState) => state.product.items;
 // Cart
 export const selectCarts = (state: RootState) => state.cart.items;
 
+// Todo List
+export const todoListSelector = (state: RootState) => state.todolist.todos;
+
 // User Cart
 export const selectUserCart = (state: RootState) => state.usercart.items;

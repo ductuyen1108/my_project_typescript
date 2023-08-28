@@ -1,28 +1,23 @@
 import { Box, FormControl, MenuItem, Select, SelectChangeEvent } from '@mui/material';
 import React from 'react';
 import { setCategory } from '../slice/filtersSlice';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useQuery } from '@tanstack/react-query';
+import { getAllCategory } from '../apis/products.api';
 
 interface CategoriesProps {
     handleCategoryClick: (category: string) => void;
 }
 
 const Categories: React.FC<CategoriesProps> = ({ handleCategoryClick }) => {
-    const [categories, setCategories] = useState<string[]>([]);
     const [type, setType] = useState<string>('');
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        fetch('https://fakestoreapi.com/products/categories')
-            .then((res) => res.json())
-            .then((data) => {
-                setCategories(data);
-            })
-            .catch((err) => {
-                console.log(err);
-            });
-    }, []);
+    const { data } = useQuery({
+        queryKey: ['categories'],
+        queryFn: getAllCategory,
+    });
 
     const handleChange = (e: SelectChangeEvent) => {
         setType(e.target.value);
@@ -38,7 +33,7 @@ const Categories: React.FC<CategoriesProps> = ({ handleCategoryClick }) => {
                     onChange={handleChange}
                     label="Category"
                 >
-                    {categories.map((category, index) => (
+                    {data?.data.map((category, index) => (
                         <MenuItem
                             key={index}
                             value={category}

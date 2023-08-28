@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Alert, Box, Button, List, ListItem, TextField, Typography, Paper } from '@mui/material';
 import { Delete, Edit, Save, Cancel } from '@mui/icons-material';
+import { useDispatch } from 'react-redux';
+import { addTodo, deleteTodo, editTodo } from '../../slice/todoListSlice';
 
 interface Todo {
     id: string;
@@ -13,7 +15,9 @@ const TodoList: React.FC = () => {
     const [showAlert, setShowAlert] = useState<boolean>(false);
     const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
     const [editedTodo, setEditedTodo] = useState<string>('');
+
     const inputRef = useRef<HTMLInputElement>(null);
+    const dispatch = useDispatch();
 
     useEffect(() => {
         const storedTodos = localStorage.getItem('todos');
@@ -26,7 +30,7 @@ const TodoList: React.FC = () => {
         localStorage.setItem('todos', JSON.stringify(todos));
     }, [todos]);
 
-    const handleAdd = () => {
+    /* const handleAdd = () => {
         if (todos.some((todo) => todo.id === work.replace(/\s/g, ''))) {
             setShowAlert(true);
         } else {
@@ -37,10 +41,28 @@ const TodoList: React.FC = () => {
             }
             setShowAlert(false);
         }
+    }; */
+
+    const handleAdd = () => {
+        const id = work.replace(/\s/g, '');
+        if (todos.some((todo) => todo.id === work.replace(/\s/g, ''))) {
+            setShowAlert(true);
+        } else {
+            dispatch(addTodo({ id: id, job: work }));
+            setWork('');
+            if (inputRef.current) {
+                inputRef.current.focus();
+            }
+            setShowAlert(false);
+        }
     };
 
-    const handleDelete = (id: string) => {
+    /* const handleDelete = (id: string) => {
         setTodos((prev) => prev.filter((todo) => todo.id !== id));
+    }; */
+
+    const handleDelete = (id: string) => {
+        dispatch(deleteTodo(id));
     };
 
     const handleEdit = (id: string, job: string) => {
@@ -49,14 +71,15 @@ const TodoList: React.FC = () => {
     };
 
     const handleSave = () => {
-        setTodos((prevTodos) =>
+        /* setTodos((prevTodos) =>
             prevTodos.map((todo) => {
                 if (todo.id === editingTodoId) {
                     return { ...todo, job: editedTodo };
                 }
                 return todo;
             }),
-        );
+        ); */
+        dispatch(editTodo({ id: editingTodoId!, job: editedTodo }));
         setEditingTodoId(null);
     };
 

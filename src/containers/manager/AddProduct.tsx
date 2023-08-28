@@ -1,48 +1,46 @@
 import React, { ChangeEvent, FormEvent, useState } from 'react';
 import { Box, Button, Paper, TextField, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { AppDispatch } from '../../redux/store';
-import { addNewProduct } from '../../slice/productSlice';
+import { useMutation } from '@tanstack/react-query';
+import { addProduct } from '../../apis/products.api';
+import { ProductItem } from '../../types/products.type';
 
-interface Product {
-    title: string;
-    price: number;
-    description: string;
-    image: string;
-    category: string;
-}
+export type FormStateType = Omit<ProductItem, 'id' | 'rating'>;
+export const initialFormState: FormStateType = {
+    title: '',
+    price: 0,
+    description: '',
+    image: '',
+    category: '',
+};
 
 const AddProduct: React.FC = () => {
-    const [formData, setFormData] = useState<Product>({
-        title: '',
-        price: 0,
-        description: '',
-        image: '',
-        category: '',
-    });
+    const [formState, setFormState] = useState<FormStateType>(initialFormState);
 
-    const useAppDispatch = () => useDispatch<AppDispatch>();
-    const dispatch = useAppDispatch();
+    const { mutate } = useMutation({
+        mutationFn: (body: FormStateType) => {
+            return addProduct(body);
+        },
+    });
 
     const history = useNavigate();
 
     const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData({
-            ...formData,
+        setFormState({
+            ...formState,
             [name]: value,
         });
     };
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        try {
-            await dispatch(addNewProduct(formData));
-            history('/dashboard/productlist');
-        } catch (error) {
-            console.log(error);
-        }
+        mutate(formState, {
+            onSuccess: () => {
+                setFormState(initialFormState);
+                history('/dashboard/productlist');
+            },
+        });
     };
 
     return (
@@ -64,7 +62,7 @@ const AddProduct: React.FC = () => {
                         label="Title"
                         name="title"
                         id="fullWidth"
-                        value={formData.title}
+                        value={formState.title}
                         onChange={handleOnChange}
                         fullWidth
                         sx={{ mb: [6] }}
@@ -74,14 +72,14 @@ const AddProduct: React.FC = () => {
                         id="fullWidth"
                         fullWidth
                         name="description"
-                        value={formData.description}
+                        value={formState.description}
                         onChange={handleOnChange}
                         sx={{ mb: [6] }}
                     />
                     <TextField
                         label="Category"
                         name="category"
-                        value={formData.category}
+                        value={formState.category}
                         onChange={handleOnChange}
                         fullWidth
                         sx={{ mb: [6] }}
@@ -90,7 +88,7 @@ const AddProduct: React.FC = () => {
                         label="Price"
                         type="number"
                         name="price"
-                        value={formData.price}
+                        value={formState.price}
                         onChange={handleOnChange}
                         fullWidth
                         sx={{ mb: [6] }}
@@ -98,7 +96,7 @@ const AddProduct: React.FC = () => {
                     <TextField
                         label="Image"
                         name="image"
-                        value={formData.image}
+                        value={formState.image}
                         onChange={handleOnChange}
                         fullWidth
                         sx={{ mb: [6] }}

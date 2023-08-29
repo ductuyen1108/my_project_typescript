@@ -153,7 +153,7 @@ const Header: React.FC = () => {
                                     <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                                         <Avatar
                                             alt="Remy Sharp"
-                                            src="https://lh3.googleusercontent.com/a/AAcHTtd-FQHXnDlrqimqhUsdZTz1GhGViWcgNSHSMRZx1Q=s96-c"
+                                            src="https://yt3.ggpht.com/yti/AOXPAcWkSV8yM_EiGDtCilzV9CQTm8U_k0A7OUJZqjaQ-g=s88-c-k-c0x00ffffff-no-rj"
                                         />
                                     </IconButton>
                                 </Tooltip>

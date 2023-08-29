@@ -63,6 +63,13 @@ const CartList: React.FC = () => {
         setCartList(updatedCartList);
     };
 
+    console.log('data: ', data?.data);
+    console.log('data cart show', cartList);
+    console.log(
+        'userId',
+        cartList.map((cart) => cart.userId),
+    );
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <Box sx={{ display: 'flex', flexDirection: 'column', py: '20px', fontWeight: '600', fontSize: '25px' }}>
@@ -95,7 +102,6 @@ const CartList: React.FC = () => {
                             {cartList.map((cart) => (
                                 <Fragment key={cart.id}>
                                     <TableRow
-                                        key={cart.id}
                                         sx={{
                                             ':hover': {
                                                 backgroundColor: 'rgba(0,0,0,0.05)',

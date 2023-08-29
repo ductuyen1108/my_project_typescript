@@ -146,6 +146,7 @@ const ProductList: React.FC = () => {
                                             </Button>
                                         </NavLink>
                                         <Button
+                                            className="show-dialog"
                                             variant="text"
                                             color="warning"
                                             onClick={() => product.id !== undefined && handleClickOpen(product.id)}
@@ -153,6 +154,7 @@ const ProductList: React.FC = () => {
                                             <DeleteIcon />
                                         </Button>
                                         <Dialog
+                                            className="dialog"
                                             open={open}
                                             onClose={handleClose}
                                             aria-labelledby="alert-dialog-title"
@@ -166,8 +168,12 @@ const ProductList: React.FC = () => {
                                                     When you click delete, you will permanently delete the product.
                                                 </DialogContentText>
                                             </DialogContent>
-                                            <DialogActions>
-                                                <Button onClick={handleConfirmDelete} color="warning">
+                                            <DialogActions className="button-group">
+                                                <Button
+                                                    className="delete"
+                                                    onClick={handleConfirmDelete}
+                                                    color="warning"
+                                                >
                                                     Delete
                                                 </Button>
                                                 <Button onClick={handleClose} color="info" autoFocus>

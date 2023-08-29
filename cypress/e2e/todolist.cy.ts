@@ -1,10 +1,10 @@
 describe('TodoList Component', () => {
     beforeEach(() => {
-        cy.visit('');
+        cy.visit('todolist');
     });
 
     it('should add a todo', () => {
-        const todoText = 'Test new todo';
+        const todoText = 'Quét nhà';
 
         cy.get('input[placeholder="Enter todo"]').type(todoText);
         cy.get('button').contains('Add').click();
@@ -13,8 +13,8 @@ describe('TodoList Component', () => {
     });
 
     it('should edit a todo', () => {
-        const editedTodoText = 'Edited todo';
-        const todoText = 'Test new todo';
+        const editedTodoText = 'Quét sân';
+        const todoText = 'Quét nhà';
 
         cy.get('input[placeholder="Enter todo"]').type(todoText);
         cy.get('button').contains('Add').click();
@@ -29,7 +29,7 @@ describe('TodoList Component', () => {
     });
 
     it('should delete a todo', () => {
-        const todoText = 'Test new todo';
+        const todoText = 'Quét nhà';
         const todoIndex = 0;
 
         cy.get('input[placeholder="Enter todo"]').type(todoText);

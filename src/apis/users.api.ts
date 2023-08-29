@@ -1,5 +1,5 @@
 import jwtDecode from 'jwt-decode';
-import { User, UserInfo, Users } from '../types/users.type';
+import { User, UserInfo } from '../types/users.type';
 import http from '../utils/http';
 import { DecodeToken } from '../types/auth.type';
 
@@ -13,14 +13,16 @@ export const getUserById = (id: number) => {
 
 export const getUserLoggedIn = () => {
     const token = localStorage.getItem('token');
-
-    if (!token) {
+    if (token) {
+        try {
+            const decodedToken: DecodeToken = jwtDecode(String(token));
+            const userId = decodedToken.sub;
+            const username = decodedToken.user;
+            return { userId, username };
+        } catch (error) {
+            console.error('Error decoding token:', error);
+        }
+    } else {
         return null;
     }
-
-    const decodedToken: DecodeToken = jwtDecode(token);
-    const userId = decodedToken.sub;
-    const username = decodedToken.user;
-
-    return { userId, username };
 };

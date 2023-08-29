@@ -9,5 +9,6 @@ export const login = async (username: string, password: string) => {
         return response.data.token;
     } catch (error) {
         console.error('Error logging in:', error);
+        throw error;
     }
 };

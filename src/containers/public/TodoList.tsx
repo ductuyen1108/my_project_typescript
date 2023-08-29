@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Alert, Box, Button, List, ListItem, TextField, Typography, Paper } from '@mui/material';
 import { Delete, Edit, Save, Cancel } from '@mui/icons-material';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { addTodo, deleteTodo, editTodo } from '../../slice/todoListSlice';
+import { todoListSelector } from '../../redux/selectors';
 
 interface Todo {
     id: string;
@@ -11,7 +12,7 @@ interface Todo {
 
 const TodoList: React.FC = () => {
     const [work, setWork] = useState<string>('');
-    const [todos, setTodos] = useState<Todo[]>([]);
+    //const [todos, setTodos] = useState<Todo[]>([]);
     const [showAlert, setShowAlert] = useState<boolean>(false);
     const [editingTodoId, setEditingTodoId] = useState<string | null>(null);
     const [editedTodo, setEditedTodo] = useState<string>('');
@@ -19,16 +20,19 @@ const TodoList: React.FC = () => {
     const inputRef = useRef<HTMLInputElement>(null);
     const dispatch = useDispatch();
 
-    useEffect(() => {
+    const todos = useSelector(todoListSelector);
+    console.log(todos);
+
+    /* useEffect(() => {
         const storedTodos = localStorage.getItem('todos');
         if (storedTodos) {
             setTodos(JSON.parse(storedTodos));
         }
-    }, []);
+    }, []); */
 
-    useEffect(() => {
+    /* useEffect(() => {
         localStorage.setItem('todos', JSON.stringify(todos));
-    }, [todos]);
+    }, [todos]); */
 
     /* const handleAdd = () => {
         if (todos.some((todo) => todo.id === work.replace(/\s/g, ''))) {

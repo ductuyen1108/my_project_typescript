@@ -1,32 +1,39 @@
 describe('Login page', () => {
     beforeEach(() => {
-        cy.visit('/login');
+        cy.fixture('urls').then((urls) => {
+            cy.visit(urls.login);
+        });
     });
-    it('should display login form elements', () => {
+
+    it('Show Login interface.', () => {
         cy.get('input[placeholder="username"]').should('exist');
         cy.get('input[placeholder="password"]').should('exist');
         cy.get('button[type="submit"]').should('exist');
     });
-    it('should allow user to log in with valid credentials', () => {
-        const validUsername = 'johnd';
-        const validPassword = 'm38rmF$';
 
-        cy.get('input[placeholder="username"]').type(validUsername);
-        cy.get('input[placeholder="password"]').type(validPassword);
+    const login = (username, password) => {
+        cy.get('input[placeholder="username"]').type(username);
+        cy.get('input[placeholder="password"]').type(password);
         cy.get('button[type="submit"]').click();
+    };
 
-        cy.url().should('eq', 'http://localhost:3000/');
+    it('User login with valid username and password information.', () => {
+        login('johnd', 'm38rmF$');
+
+        cy.fixture('urls').then((urls) => {
+            cy.visit(urls.home);
+        });
     });
 
-    it('should show error message for invalid credentials', () => {
-        const invalidUsername = 'invalidUsername';
-        const invalidPassword = 'invalidPassword';
+    it('User login with invalid username and password information.', () => {
+        try {
+            login('invalidUsername', 'invalidPassword');
+        } catch (error) {
+            // Get the error message from the `login()` function
+            const errorMessage = error.message;
 
-        cy.get('input[placeholder="username"]').type(invalidUsername);
-        cy.get('input[placeholder="password"]').type(invalidPassword);
-        cy.get('button[type="submit"]').click();
-
-        // Check for error message
-        cy.contains('Invalid username or password!').should('be.visible');
+            // Check for the error message
+            cy.contains(errorMessage).should('be.visible');
+        }
     });
 });

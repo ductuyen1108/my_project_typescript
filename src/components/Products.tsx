@@ -4,12 +4,13 @@ import React from 'react';
 import { filterSelectedCategory } from '../redux/selectors';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { getProducts, getProductsByCategory } from '../apis/products.api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { getProductById, getProducts, getProductsByCategory } from '../apis/products.api';
 
 const Products: React.FC = () => {
     const selectedCategory = useSelector(filterSelectedCategory);
     console.log('Select', selectedCategory);
+    const queryClient = useQueryClient();
 
     const { data } = useQuery({
         queryKey: ['products', selectedCategory],
@@ -24,6 +25,13 @@ const Products: React.FC = () => {
         keepPreviousData: true,
     });
 
+    const handleProductHover = (productId: number) => {
+        queryClient.prefetchQuery(['product', String(productId)], {
+            queryFn: () => getProductById(productId),
+            staleTime: 10 * 1000,
+        });
+    };
+
     console.log('array', data?.data);
 
     return (
@@ -31,6 +39,7 @@ const Products: React.FC = () => {
             {data?.data.map((product) => (
                 <Grid key={product.id} item xs={12} sm={6} md={4}>
                     <Link
+                        onMouseEnter={() => handleProductHover(product.id)}
                         to={`/product/${product.id}`}
                         className="cursor-pointer w-full flex flex-col items-center py-[10px] hover:transform hover:translate-y-[-5px] hover:shadow-lg hover:rounded-md transition duration-300"
                     >

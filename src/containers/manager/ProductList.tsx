@@ -21,8 +21,8 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { NavLink } from 'react-router-dom';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { deleteProduct, getAllProducts } from '../../apis/products.api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { deleteProduct, getAllProducts, getProductById } from '../../apis/products.api';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Products } from '../../types/products.type';
@@ -31,6 +31,8 @@ const ProductList: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
     const [products, setProducts] = useState<Products>([]);
+
+    const queryClient = useQueryClient();
 
     const { data } = useQuery({
         queryKey: ['products'],
@@ -69,6 +71,13 @@ const ProductList: React.FC = () => {
 
     const handleClose = () => {
         setOpen(false);
+    };
+
+    const handleRowHover = (productId: number) => {
+        queryClient.prefetchQuery(['product', String(productId)], {
+            queryFn: () => getProductById(productId),
+            staleTime: 10 * 1000,
+        });
     };
 
     const handleConfirmDelete = () => {
@@ -141,7 +150,11 @@ const ProductList: React.FC = () => {
                                     <TableCell>$ {product.price}</TableCell>
                                     <TableCell>
                                         <NavLink to={`/dashboard/productedit/${product.id}`}>
-                                            <Button variant="text" color="primary">
+                                            <Button
+                                                variant="text"
+                                                color="primary"
+                                                onMouseEnter={() => handleRowHover(product.id)}
+                                            >
                                                 <EditIcon />
                                             </Button>
                                         </NavLink>

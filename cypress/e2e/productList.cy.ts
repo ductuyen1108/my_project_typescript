@@ -19,17 +19,21 @@ describe('ProductList Component', () => {
 
     it('should delete a product when Delete button is clicked', () => {
         cy.fixture('products.json').then((products) => {
-            const initialProductCount = products.length;
+            products.forEach((product) => {
+                cy.get('button.show-dialog')
+                    .eq(product.id - 1)
+                    .click();
 
-            cy.get('button.show-dialog').first().click();
+                cy.get('div.dialog').should('be.visible');
 
-            cy.get('div.dialog').should('be.visible');
+                cy.get('div.dialog').find('button').contains('Delete').click({ force: true });
 
-            cy.get('button.delete').click({ multiple: true });
+                cy.contains('Delete product successfully').should('be.visible');
 
-            cy.contains('Delete product successfully').should('be.visible');
+                cy.get('.MuiDialog-container').should('not.exist');
+            });
 
-            cy.get('.MuiButton-root svg.MuiSvgIcon-root.DeleteIcon').should('have.length', initialProductCount - 1);
+            cy.get('.MuiButton-root svg.MuiSvgIcon-root.DeleteIcon').should('have.length', 0);
         });
     });
 });

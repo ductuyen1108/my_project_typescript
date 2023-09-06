@@ -3,8 +3,10 @@ import { User, UserInfo } from '../types/users.type';
 import http from '../utils/http';
 import { DecodeToken } from '../types/auth.type';
 
-export const getAllUsers = () => {
-    return http.get<User[]>('users');
+export const getAllUsers = (signal: AbortSignal | undefined) => {
+    return http.get<User[]>('users', {
+        signal,
+    });
 };
 
 export const getUserById = (id: number) => {

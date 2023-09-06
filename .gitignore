@@ -7,6 +7,8 @@
 
 # testing
 /coverage
+/cypress
+/src/__test__
 
 # production
 /build

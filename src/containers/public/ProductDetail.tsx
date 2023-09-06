@@ -10,20 +10,23 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const ProductDetail: React.FC = () => {
-    const { id } = useParams<{ id: any }>();
+    const { id } = useParams<{ id: string }>();
     const history = useNavigate();
 
     const loggedInfo = getUserLoggedIn();
     const userId = loggedInfo?.userId;
 
-    const { data } = useQuery({
-        queryKey: ['product'],
+    const productQuery = useQuery({
+        queryKey: ['product', id],
         queryFn: () => getProductById(Number(id)),
+        enabled: id !== undefined,
+        staleTime: 1000 * 10,
     });
-    const product = data?.data;
+
+    const product = productQuery.data?.data;
 
     const addToCartMutation = useMutation({
-        mutationFn: () => addToCart(Number(userId), id, 1),
+        mutationFn: () => addToCart(Number(userId), Number(id), 1),
         onSuccess: () => {
             toast.success('Add to cart successfully');
         },

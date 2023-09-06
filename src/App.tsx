@@ -18,10 +18,16 @@ import {
     UserCart,
     Userlist,
 } from './containers';
+import { CircularProgress } from '@mui/material';
+import { useIsFetching, useIsMutating } from '@tanstack/react-query';
 
 function App() {
+    const isFetching = useIsFetching();
+    const isMutating = useIsMutating();
+
     return (
         <div className="App">
+            {isFetching + isMutating > 0 && <CircularProgress sx={{ position: 'fixed' }} />}
             <Routes>
                 <Route path={path.PUBLIC} element={<Public />}>
                     <Route path={path.HOME} element={<Home />} />

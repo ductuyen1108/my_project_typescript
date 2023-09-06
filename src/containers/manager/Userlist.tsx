@@ -1,6 +1,7 @@
 import React from 'react';
 import {
     Box,
+    Button,
     CircularProgress,
     Paper,
     Table,
@@ -13,19 +14,22 @@ import {
     Typography,
 } from '@mui/material';
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getAllUsers } from '../../apis/users.api';
 
 const Userlist: React.FC = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
 
-    const { data } = useQuery({
+    const queryClient = useQueryClient();
+
+    const usersQuery = useQuery({
         queryKey: ['users'],
-        queryFn: getAllUsers,
+        queryFn: ({ signal }) => getAllUsers(signal),
+        retry: 1,
     });
 
-    console.log(data?.data);
+    const users = usersQuery.data?.data;
 
     const handleChangePage = (event: unknown, newPage: number) => {
         setPage(newPage);
@@ -36,9 +40,17 @@ const Userlist: React.FC = () => {
         setPage(0);
     };
 
+    const refetchUsers = () => {
+        usersQuery.refetch();
+    };
+
+    const cancelRequestUsers = () => {
+        queryClient.cancelQueries({ queryKey: ['users'] });
+    };
+
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            {data?.data ? (
+            {users ? (
                 <>
                     <Box
                         sx={{
@@ -51,6 +63,14 @@ const Userlist: React.FC = () => {
                         }}
                     >
                         <Typography variant="h2">User List</Typography>
+                    </Box>
+                    <Box sx={{ my: 3, display: 'flex', gap: 6 }}>
+                        <Button variant="outlined" onClick={refetchUsers}>
+                            Refetch Users
+                        </Button>
+                        <Button variant="outlined" onClick={cancelRequestUsers}>
+                            Cancel request users api
+                        </Button>
                     </Box>
                     <Box
                         sx={{
@@ -74,38 +94,36 @@ const Userlist: React.FC = () => {
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {data?.data
-                                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                                        .map((user) => (
-                                            <TableRow
-                                                key={user.id}
+                                    {users.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((user) => (
+                                        <TableRow
+                                            key={user.id}
+                                            sx={{
+                                                ':hover': {
+                                                    backgroundColor: 'rgba(0,0,0,0.05)',
+                                                },
+                                            }}
+                                        >
+                                            <TableCell
                                                 sx={{
-                                                    ':hover': {
-                                                        backgroundColor: 'rgba(0,0,0,0.05)',
-                                                    },
+                                                    maxWidth: '200px',
+                                                    overflow: 'hidden',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    textTransform: 'capitalize',
                                                 }}
                                             >
-                                                <TableCell
-                                                    sx={{
-                                                        maxWidth: '200px',
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap',
-                                                        textTransform: 'capitalize',
-                                                    }}
-                                                >
-                                                    {user.name.firstname} {user.name.lastname}
-                                                </TableCell>
-                                                <TableCell>{user.email}</TableCell>
-                                                <TableCell sx={{ textTransform: 'capitalize' }}>
-                                                    {user.address.street}
-                                                </TableCell>
-                                                <TableCell sx={{ textTransform: 'capitalize' }}>
-                                                    {user.address.city}
-                                                </TableCell>
-                                                <TableCell>{user.phone}</TableCell>
-                                            </TableRow>
-                                        ))}
+                                                {user.name.firstname} {user.name.lastname}
+                                            </TableCell>
+                                            <TableCell>{user.email}</TableCell>
+                                            <TableCell sx={{ textTransform: 'capitalize' }}>
+                                                {user.address.street}
+                                            </TableCell>
+                                            <TableCell sx={{ textTransform: 'capitalize' }}>
+                                                {user.address.city}
+                                            </TableCell>
+                                            <TableCell>{user.phone}</TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </TableContainer>
@@ -113,7 +131,7 @@ const Userlist: React.FC = () => {
                             <TablePagination
                                 rowsPerPageOptions={[5, 10, 20]}
                                 component="div"
-                                count={data?.data.length}
+                                count={users.length}
                                 rowsPerPage={rowsPerPage}
                                 page={page}
                                 onPageChange={handleChangePage}

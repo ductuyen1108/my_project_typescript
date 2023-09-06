@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
 import { Outlet } from 'react-router-dom';
-import { Header } from '../../components';
+import { Header, Footer } from '../../components';
 
 const Public: React.FC = () => {
     return (
@@ -11,6 +11,9 @@ const Public: React.FC = () => {
             </Box>
             <Box sx={{ paddingTop: '68.5px' }}>
                 <Outlet />
+            </Box>
+            <Box>
+                <Footer />
             </Box>
         </Box>
     );
